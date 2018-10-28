@@ -1,0 +1,63 @@
+﻿<Window x:Class="Client.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Client"
+        xmlns:vm="clr-namespace:Client.ViewModel"
+        xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Client" Height="768" Width="1024" WindowStyle="None" ResizeMode="NoResize" MouseDown="Window_MouseDown">
+
+    <Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <md:ColorZone Grid.Row="0" Mode="PrimaryLight" DockPanel.Dock="Right">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMinimize}" Click="WindowMinimize_Click"/>
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMaximize}" Click="WindowMaximize_Click"/>
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowClose}" Click="WindowClose_Click"/>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Left" Margin="16 0 0 0" VerticalAlignment="Center" Text="{Binding WindowTitle}" Style="{StaticResource MaterialDesignTitleTextBlock}"></TextBlock>
+            </DockPanel>
+        </md:ColorZone>
+
+        <Border Grid.Row="1" Grid.RowSpan="2" Margin="5" CornerRadius="10" BorderBrush="Gray" BorderThickness="1">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="5">
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                        <Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Content="{md:PackIcon Kind=Reload}" Command="{Binding ConnectCommand}"/>
+                        <Label Content="Connection:" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Connection}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="{md:PackIcon Kind=Settings}" Command="{Binding OpenSettingsDialog}"/>
+                    </StackPanel>
+                    <Border/>
+                </DockPanel>
+                <Separator DockPanel.Dock="Top"/>
+                <DockPanel DockPanel.Dock="Bottom">
+                    <ScrollViewer MinWidth="250" DockPanel.Dock="Left">
+                        <ListView>
+
+                        </ListView>
+                    </ScrollViewer>
+                    <Separator DockPanel.Dock="Left"/>
+                    <ItemsControl DockPanel.Dock="Right">
+                        
+                    </ItemsControl>
+                </DockPanel>
+            </DockPanel>
+        </Border>
+        <md:Snackbar x:Name="SnackBar" Grid.Row="1" MessageQueue="{md:MessageQueue}"></md:Snackbar>
+        <md:DialogHost Grid.Row="1" Grid.ColumnSpan="2" x:Name="SettingsDialog"/>
+    </Grid>
+</Window>
