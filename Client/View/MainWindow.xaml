@@ -50,10 +50,33 @@
 
                         </ListView>
                     </ScrollViewer>
-                    <Separator DockPanel.Dock="Left"/>
-                    <ItemsControl DockPanel.Dock="Right">
-                        
-                    </ItemsControl>
+                    <Grid DockPanel.Dock="Right">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <ItemsControl Grid.Row="0" ItemsSource="{Binding Messages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="5 5 5 0" CornerRadius="10" BorderBrush="Gray" BorderThickness="1">
+                                        <StackPanel Margin="10 5" Orientation="Horizontal">
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding From.Name}"/>
+                                            <Border Margin="10 0"/>
+                                            <TextBlock VerticalAlignment="Center" Text="{Binding Text}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <StackPanel Grid.Row="1">
+                            <Border Margin="5" CornerRadius="10" BorderThickness="1" BorderBrush="Gray">
+                                <DockPanel Margin="10">
+                                    <Button Margin="5 0 0 0" DockPanel.Dock="Right" Content="{md:PackIcon Kind=Send}" Command="{Binding SendMessageCommand}"/>
+                                    <TextBox md:HintAssist.Hint="Message" Text="{Binding MessageText}"/>
+                                </DockPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
                 </DockPanel>
             </DockPanel>
         </Border>

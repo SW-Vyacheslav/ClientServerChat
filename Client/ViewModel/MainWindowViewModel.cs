@@ -13,28 +13,22 @@ using Client.View;
 using System.Windows;
 using System.Threading.Tasks;
 using MaterialDesignThemes.Wpf;
+using System.Collections.ObjectModel;
 
 namespace Client.ViewModel
 {
     public class MainWindowViewModel : ObservableObject
     {
         private MainWindow _mainWindow;
+        private Dictionary<Type, String> _responseTypes;
 
         private Socket _client;
         private IPAddress _serverIPAddress;
         private IPEndPoint _serverEndPoint;
-
         private User _client_user;
-
         private SettingsView _settingsView;
-
+       
         public Boolean IsConnected { get; set; }
-        public User @User
-        {
-            get { return _client_user; }
-        }
-
-        public String WindowTitle { get; set; }
         public String Connection
         {
             get
@@ -42,11 +36,17 @@ namespace Client.ViewModel
                 return IsConnected == true ? "Connected" : "Disconnected";
             }
         }
-
-        public List<Message> Messages { get; set; }
+        public User @User
+        {
+            get { return _client_user; }
+        }
+        public String WindowTitle { get; set; }
+        public String MessageText { get; set; }
+        public ObservableCollection<Message> Messages { get; set; }
 
         public DelegateCommand ConnectCommand { get; set; }
         public DelegateCommand OpenSettingsDialog { get; set; }
+        public DelegateCommand SendMessageCommand { get; set; }
 
         public MainWindowViewModel()
         {
@@ -55,10 +55,13 @@ namespace Client.ViewModel
 
             IsConnected = false;
             WindowTitle = "Client";
-            Messages = new List<Message>(); 
+            Messages = new ObservableCollection<Message>(); 
 
             ConnectCommand = new DelegateCommand(o => Connect(),o => !IsConnected);
             OpenSettingsDialog = new DelegateCommand(o => ShowSettingsDialog());
+            SendMessageCommand = new DelegateCommand(o => SendMessage(), o => IsConnected);
+
+            InitTypes();
 
             Connect();
         }
@@ -66,6 +69,13 @@ namespace Client.ViewModel
         ~MainWindowViewModel()
         {
             Disconnect();
+        }
+
+        private void InitTypes()
+        {
+            _responseTypes = new Dictionary<Type, string>();
+            _responseTypes.Add(typeof(ConnectResponse), "connect");
+            _responseTypes.Add(typeof(MessageResponse), "message");
         }
 
         private void SendRequestToServer(Socket server, Request request)
@@ -77,11 +87,24 @@ namespace Client.ViewModel
 
         private Response GetResponseFromServer(Socket server)
         {
+            Response value = null;
+
             byte[] recv_data_bytes = new byte[1024];
             server.Receive(recv_data_bytes);
             String recv_data_str = Encoding.UTF8.GetString(recv_data_bytes);
 
-            return JsonConvert.DeserializeObject(recv_data_str) as Response;
+            dynamic temp = JsonConvert.DeserializeObject(recv_data_str);
+
+            for (int i = 0; i < _responseTypes.Count; i++)
+            {
+                if (temp.response_type == _responseTypes.Values.ElementAt(i))
+                {
+                    value = JsonConvert.DeserializeObject(recv_data_str, _responseTypes.Keys.ElementAt(i)) as Response;
+                    break;
+                }
+            }
+
+            return value;
         }
 
         private void Connect()
@@ -122,6 +145,12 @@ namespace Client.ViewModel
             RaisePropertyChangedEvent("Connection");
         }
 
+        private void SendMessage()
+        {
+            Request messageRequest = new MessageRequest(new Message(_client_user,MessageText));
+            SendRequestToServer(_client,messageRequest);
+        }
+
         private void ShowSettingsDialog()
         {            
             _mainWindow.SettingsDialog.ShowDialog(_settingsView,SettingsClosingEventHandler);
@@ -129,6 +158,7 @@ namespace Client.ViewModel
 
         private void SettingsClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
         {
+            if((bool)eventArgs.Parameter == false) return;
             SettingsViewModel settingsViewModel = _settingsView.DataContext as SettingsViewModel;
             settingsViewModel.ServerIPAddress = _settingsView.serverIPAddress.Text;
             settingsViewModel.UserName = _settingsView.userName.Text;
@@ -160,7 +190,7 @@ namespace Client.ViewModel
                             }
                         case "message":
                             {
-                                Messages.Add((server_response as MessageResponse).Message);
+                                Application.Current.Dispatcher.Invoke(() => { Messages.Add((server_response as MessageResponse).Message); });
                                 break;
                             }
 

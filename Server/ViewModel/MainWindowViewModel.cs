@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Server.ViewModel
         private Objects.Server _server;
         private const int _port = 80;
 
-        public List<User> Users { get; set; }
+        public ObservableCollection<User> Users { get; set; }
 
         public void AddUser(User user)
         {
@@ -47,7 +48,7 @@ namespace Server.ViewModel
         public MainWindowViewModel()
         {
             _server = new Objects.Server(_port,this);
-            Users = new List<User>();
+            Users = new ObservableCollection<User>();
 
             StartServerCommand = new DelegateCommand(o => StartServer(), o => !_server.IsStarted);
             StopServerCommand = new DelegateCommand(o => StopServer(), o => _server.IsStarted);

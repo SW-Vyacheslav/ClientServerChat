@@ -18,12 +18,10 @@ namespace Client.Objects
 
         private ConfigurationBuilder _configurationBuilder;
 
-        private String _iniFilePath;
+        private String _iniFilePath = Environment.CurrentDirectory + "\\" + Resources.Resources.ini_file_name;
 
         public ClientSettings()
         {
-            _iniFilePath = Environment.CurrentDirectory + "/config.ini";
-
             if (!File.Exists(_iniFilePath))
             {
                 using (StreamWriter streamWriter = File.CreateText(_iniFilePath))

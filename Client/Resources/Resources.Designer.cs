@@ -70,5 +70,14 @@ namespace Client.Resources {
                 return ResourceManager.GetString("config", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to appconfig.ini.
+        /// </summary>
+        internal static string ini_file_name {
+            get {
+                return ResourceManager.GetString("ini_file_name", resourceCulture);
+            }
+        }
     }
 }

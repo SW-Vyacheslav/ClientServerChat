@@ -7,6 +7,8 @@ using System.Net.Sockets;
 
 using CommonObjects.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Windows;
 
 namespace Server.Objects
 {
@@ -15,10 +17,21 @@ namespace Server.Objects
         private List<Socket> _clients;
         private ViewModel.MainWindowViewModel _mainWindowViewModel;
 
+        private Dictionary<Type, String> _requestTypes;
+
         public ClientManager(ViewModel.MainWindowViewModel mainWindowViewModel)
         {
             _clients = new List<Socket>();
             _mainWindowViewModel = mainWindowViewModel;
+            InitTypes();
+        }
+
+        private void InitTypes()
+        {
+            _requestTypes = new Dictionary<Type, string>();
+            _requestTypes.Add(typeof(ConnectRequest),"connect");
+            _requestTypes.Add(typeof(DisconnectRequest),"disconnect");
+            _requestTypes.Add(typeof(MessageRequest),"message");
         }
 
         public void AddClient(Socket client)
@@ -33,7 +46,7 @@ namespace Server.Objects
         {
             foreach (Socket client in _clients)
             {
-                client?.Shutdown(SocketShutdown.Both);
+                client?.Close();
             }
 
             _clients.Clear();
@@ -56,11 +69,24 @@ namespace Server.Objects
 
         private Request GetRequestFromClient(Socket client)
         {
+            Request value = null;
+
             byte[] recv_data_bytes = new byte[1024];
             client.Receive(recv_data_bytes);
             String recv_data_str = Encoding.UTF8.GetString(recv_data_bytes);
 
-            return JsonConvert.DeserializeObject(recv_data_str) as Request;
+            dynamic temp = JsonConvert.DeserializeObject(recv_data_str);
+
+            for (int i = 0; i < _requestTypes.Count; i++)
+            {
+                if(temp.request_type == _requestTypes.Values.ElementAt(i))
+                {
+                    value = JsonConvert.DeserializeObject(recv_data_str,_requestTypes.Keys.ElementAt(i)) as Request;
+                    break;
+                }
+            }
+
+            return value;
         }
 
         private void ClientLoop(object client)
@@ -80,14 +106,14 @@ namespace Server.Objects
                             {
                                 Response connectResponse = new ConnectResponse((client_request as ConnectRequest).User);
                                 SendResponseToClient(temp_client,connectResponse);
-                                _mainWindowViewModel.AddUser((client_request as ConnectRequest).User);
+                                Application.Current.Dispatcher.Invoke( () => _mainWindowViewModel.AddUser((client_request as ConnectRequest).User));
                                 client_user = (client_request as ConnectRequest).User;
                                 break;
                             }
 
                         case "disconnect":
                             {
-                                _mainWindowViewModel.RemoveUserByID((client_request as DisconnectRequest).User.ID);
+                                Application.Current.Dispatcher.Invoke(() => _mainWindowViewModel.RemoveUserByID((client_request as DisconnectRequest).User.ID));
                                 throw new Exception();
                             }
 
@@ -111,7 +137,7 @@ namespace Server.Objects
             {
                 temp_client?.Close();
                 _clients.Remove(temp_client);
-                if(client_user != null) _mainWindowViewModel.RemoveUserByID(client_user.ID);
+                if(client_user != null) Application.Current.Dispatcher.Invoke( () => _mainWindowViewModel.RemoveUserByID(client_user.ID));
             }
         }
     }
