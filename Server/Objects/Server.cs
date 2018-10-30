@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
-
-using CommonObjects.Helpers;
 
 namespace Server.Objects
 {
@@ -29,12 +24,12 @@ namespace Server.Objects
             get { return _isStarted; }
         }
 
-        public Server(int port,ViewModel.MainWindowViewModel mainWindowViewModel)
+        public Server(int port)
         {
             _localIPAddress = IPAddress.Parse("127.0.0.1");
             _localEndPoint = new IPEndPoint(_localIPAddress, port);
             _isStarted = false;
-            _clientManager = new ClientManager(mainWindowViewModel);
+            _clientManager = new ClientManager();
         }
 
         public void Start()
@@ -61,7 +56,7 @@ namespace Server.Objects
                     _clientManager.AddClient(accepted_socket);
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
              
             }

@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Net.Sockets;
+using System.Windows;
 
 using CommonObjects.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Windows;
 
 namespace Server.Objects
 {
@@ -19,10 +18,9 @@ namespace Server.Objects
 
         private Dictionary<Type, String> _requestTypes;
 
-        public ClientManager(ViewModel.MainWindowViewModel mainWindowViewModel)
+        public ClientManager()
         {
             _clients = new List<Socket>();
-            _mainWindowViewModel = mainWindowViewModel;
             InitTypes();
         }
 
@@ -34,8 +32,20 @@ namespace Server.Objects
             _requestTypes.Add(typeof(MessageRequest),"message");
         }
 
+        private T FunctionWithInvoke<T>(Func<T> callback)
+        {
+            return Application.Current.Dispatcher.Invoke(callback);
+        }
+
+        private void ActionWithInvoke(Action action)
+        {
+            Application.Current.Dispatcher.Invoke(action);
+        }
+
         public void AddClient(Socket client)
         {
+            if(_mainWindowViewModel == null) _mainWindowViewModel = FunctionWithInvoke( () => Application.Current.Windows.OfType<View.MainWindow>().FirstOrDefault().DataContext as ViewModel.MainWindowViewModel);
+
             _clients.Add(client);
             Thread clientLoop_Thread = new Thread(ClientLoop);
             clientLoop_Thread.IsBackground = true;
@@ -106,14 +116,14 @@ namespace Server.Objects
                             {
                                 Response connectResponse = new ConnectResponse((client_request as ConnectRequest).User);
                                 SendResponseToClient(temp_client,connectResponse);
-                                Application.Current.Dispatcher.Invoke( () => _mainWindowViewModel.AddUser((client_request as ConnectRequest).User));
+                                ActionWithInvoke( () => _mainWindowViewModel.AddUser((client_request as ConnectRequest).User));
                                 client_user = (client_request as ConnectRequest).User;
                                 break;
                             }
 
                         case "disconnect":
                             {
-                                Application.Current.Dispatcher.Invoke(() => _mainWindowViewModel.RemoveUserByID((client_request as DisconnectRequest).User.ID));
+                                ActionWithInvoke(() => _mainWindowViewModel.RemoveUserByID((client_request as DisconnectRequest).User.ID));
                                 throw new Exception();
                             }
 
@@ -137,7 +147,7 @@ namespace Server.Objects
             {
                 temp_client?.Close();
                 _clients.Remove(temp_client);
-                if(client_user != null) Application.Current.Dispatcher.Invoke( () => _mainWindowViewModel.RemoveUserByID(client_user.ID));
+                if(client_user != null) ActionWithInvoke( () => _mainWindowViewModel.RemoveUserByID(client_user.ID));
             }
         }
     }

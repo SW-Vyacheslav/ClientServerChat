@@ -7,7 +7,11 @@
         xmlns:vm="clr-namespace:Client.ViewModel"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Client" Height="768" Width="1024" WindowStyle="None" ResizeMode="NoResize" MouseDown="Window_MouseDown">
+        Height="768"
+        Width="1024"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        MouseDown="Window_MouseDown">
 
     <Window.DataContext>
         <vm:MainWindowViewModel/>
@@ -19,19 +23,24 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <md:ColorZone Grid.Row="0" Mode="PrimaryLight" DockPanel.Dock="Right">
+        <md:ColorZone Grid.Row="0" Mode="PrimaryLight">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                     <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMinimize}" Click="WindowMinimize_Click"/>
                     <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMaximize}" Click="WindowMaximize_Click"/>
                     <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowClose}" Click="WindowClose_Click"/>
                 </StackPanel>
-                <TextBlock DockPanel.Dock="Left" Margin="16 0 0 0" VerticalAlignment="Center" Text="{Binding WindowTitle}" Style="{StaticResource MaterialDesignTitleTextBlock}"></TextBlock>
+                <TextBlock DockPanel.Dock="Left" Margin="16 0 0 0" VerticalAlignment="Center" Text="{Binding WindowTitle}" Style="{StaticResource MaterialDesignSubheadingTextBlock}"></TextBlock>
             </DockPanel>
         </md:ColorZone>
 
-        <Border Grid.Row="1" Grid.RowSpan="2" Margin="5" CornerRadius="10" BorderBrush="Gray" BorderThickness="1">
-            <DockPanel>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="5 5 5 0">
                 <DockPanel DockPanel.Dock="Top" Margin="5">
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                         <Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Content="{md:PackIcon Kind=Reload}" Command="{Binding ConnectCommand}"/>
@@ -43,44 +52,67 @@
                     </StackPanel>
                     <Border/>
                 </DockPanel>
-                <Separator DockPanel.Dock="Top"/>
-                <DockPanel DockPanel.Dock="Bottom">
-                    <ScrollViewer MinWidth="250" DockPanel.Dock="Left">
-                        <ListView>
+                <Separator/>
+            </StackPanel>
 
-                        </ListView>
-                    </ScrollViewer>
-                    <Grid DockPanel.Dock="Right">
+            <Border Grid.Row="1">
+                
+                <DockPanel>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.4*"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
-                            <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        <ItemsControl Grid.Row="0" ItemsSource="{Binding Messages}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="5 5 5 0" CornerRadius="10" BorderBrush="Gray" BorderThickness="1">
-                                        <StackPanel Margin="10 5" Orientation="Horizontal">
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding From.Name}"/>
-                                            <Border Margin="10 0"/>
-                                            <TextBlock VerticalAlignment="Center" Text="{Binding Text}"/>
-                                        </StackPanel>
+
+                        <DockPanel Grid.Column="0">
+                            <ScrollViewer >
+                                <ListView>
+
+                                </ListView>
+                            </ScrollViewer>
+                        </DockPanel>
+
+                        <DockPanel Grid.Column="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition Height="auto"/>
+                                </Grid.RowDefinitions>
+                                <ScrollViewer Grid.Row="0">
+                                    <ItemsControl  ItemsSource="{Binding Messages}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="5 5 5 0" CornerRadius="10" BorderBrush="Gray" BorderThickness="1">
+                                                    <StackPanel Margin="10 5" Orientation="Horizontal">
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding From.Name}"/>
+                                                        <Border Margin="10 0"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding Text}"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                                <StackPanel Grid.Row="1">
+                                    <Border Margin="5" CornerRadius="10" BorderThickness="1" BorderBrush="Gray">
+                                        <DockPanel Margin="10">
+                                            <Button Margin="5 0 0 0" DockPanel.Dock="Right" Content="{md:PackIcon Kind=Send}" Command="{Binding SendMessageCommand}"/>
+                                            <TextBox md:HintAssist.Hint="Message" Text="{Binding MessageText}"/>
+                                        </DockPanel>
                                     </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <StackPanel Grid.Row="1">
-                            <Border Margin="5" CornerRadius="10" BorderThickness="1" BorderBrush="Gray">
-                                <DockPanel Margin="10">
-                                    <Button Margin="5 0 0 0" DockPanel.Dock="Right" Content="{md:PackIcon Kind=Send}" Command="{Binding SendMessageCommand}"/>
-                                    <TextBox md:HintAssist.Hint="Message" Text="{Binding MessageText}"/>
-                                </DockPanel>
-                            </Border>
-                        </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </DockPanel>
                     </Grid>
                 </DockPanel>
-            </DockPanel>
-        </Border>
+            </Border>
+        </Grid>
+        
         <md:Snackbar x:Name="SnackBar" Grid.Row="1" MessageQueue="{md:MessageQueue}"></md:Snackbar>
-        <md:DialogHost Grid.Row="1" Grid.ColumnSpan="2" x:Name="SettingsDialog"/>
+        <md:DialogHost Grid.Row="1" x:Name="SettingsDialog"/>
     </Grid>
 </Window>

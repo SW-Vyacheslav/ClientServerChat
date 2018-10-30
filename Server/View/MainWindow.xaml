@@ -5,40 +5,62 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         xmlns:vm="clr-namespace:Server.ViewModel"
+        xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Height="600"
+        Width="800"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        MouseDown="Window_MouseDown">
 
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
     
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0.35*"/>
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Server Status:"/>
-                <TextBlock Text="{Binding ServerStatus}" VerticalAlignment="Center"/>
-            </StackPanel>
-            <Button Content="Start" Command="{Binding StartServerCommand}"/>
-            <Button Content="Stop" Command="{Binding StopServerCommand}"/>
-        </StackPanel>
-        <Grid Grid.Column="1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <md:ColorZone Grid.Row="0" Mode="PrimaryLight">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMinimize}" Click="WindowMinimize_Click"/>
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMaximize}" Click="WindowMaximize_Click"/>
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowClose}" Click="WindowClose_Click"/>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Left" Margin="16 0 0 0" VerticalAlignment="Center" Text="{Binding WindowTitle}" Style="{StaticResource MaterialDesignSubheadingTextBlock}"></TextBlock>
+            </DockPanel>
+        </md:ColorZone>
+        
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Label Grid.Row="0" Content="Connected Users:"/>
-            <ListView Grid.Row="1" ItemsSource="{Binding Users}">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ID}"/>
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+            
+            <StackPanel Grid.Row="0" Margin="5 5 5 0" Orientation="Horizontal">
+                <Button Content="{md:PackIcon Kind=PlayArrow}" Command="{Binding StartServerCommand}"/>
+                <Button Margin="5 0 0 0" Content="{md:PackIcon Kind=Stop}" Command="{Binding StopServerCommand}"/>
+                <StackPanel Margin="5 0 0 0" Orientation="Horizontal">
+                    <Label VerticalContentAlignment="Center" Content="Server Status:"/>
+                    <TextBlock Text="{Binding ServerStatus}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1">
+                <Separator/>
+                <Label  Content="Connected Users:"/>
+                <ListView ItemsSource="{Binding Users}">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ID}"/>
+                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

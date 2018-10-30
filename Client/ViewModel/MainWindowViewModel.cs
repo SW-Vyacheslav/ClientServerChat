@@ -5,15 +5,17 @@ using System.Text;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
+using System.Collections.ObjectModel;
+using System.Windows;
 
 using CommonObjects.Helpers;
 using CommonObjects.Models;
+
 using Newtonsoft.Json;
+
 using Client.View;
-using System.Windows;
-using System.Threading.Tasks;
+
 using MaterialDesignThemes.Wpf;
-using System.Collections.ObjectModel;
 
 namespace Client.ViewModel
 {

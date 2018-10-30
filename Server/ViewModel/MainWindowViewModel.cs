@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using CommonObjects.Helpers;
 using CommonObjects.Models;
@@ -38,17 +34,20 @@ namespace Server.ViewModel
         {
             get
             {
-                return _server.IsStarted == true ? "Running" : "Stoped"; 
+                return (_server.IsStarted == true ? "Running" : "Stoped") ?? "Stoped"; 
             }
         }
+        public String WindowTitle { get; set; }
 
         public DelegateCommand StartServerCommand { get; set; }
         public DelegateCommand StopServerCommand { get; set; }
 
         public MainWindowViewModel()
         {
-            _server = new Objects.Server(_port,this);
+            _server = new Objects.Server(_port);
             Users = new ObservableCollection<User>();
+
+            WindowTitle = "Server";
 
             StartServerCommand = new DelegateCommand(o => StartServer(), o => !_server.IsStarted);
             StopServerCommand = new DelegateCommand(o => StopServer(), o => _server.IsStarted);
@@ -56,7 +55,7 @@ namespace Server.ViewModel
 
         ~MainWindowViewModel()
         {
-            _server.Dispose();
+            _server?.Dispose();
         }
 
         private void StartServer()

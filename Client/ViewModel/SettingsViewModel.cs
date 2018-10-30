@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 
 using CommonObjects.Helpers;
@@ -15,8 +11,6 @@ namespace Client.ViewModel
 
         public String UserName { get; set; }
         public String ServerIPAddress { get; set; }
-
-        private DelegateCommand ApplySettingsCommand { get; set; }
 
         public SettingsViewModel()
         {
