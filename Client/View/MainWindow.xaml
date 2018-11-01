@@ -23,12 +23,12 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <md:ColorZone Grid.Row="0" Mode="PrimaryLight">
+        <md:ColorZone Grid.Row="0" Mode="PrimaryDark">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMinimize}" Click="WindowMinimize_Click"/>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMaximize}" Click="WindowMaximize_Click"/>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowClose}" Click="WindowClose_Click"/>
+                    <Button Foreground="{DynamicResource PrimaryHueLightBrush}" Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMinimize}" Click="WindowMinimize_Click"/>
+                    <Button Foreground="{DynamicResource PrimaryHueLightBrush}" Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMaximize}" Click="WindowMaximize_Click"/>
+                    <Button Foreground="{DynamicResource PrimaryHueLightBrush}" Style="{StaticResource MaterialDesignExitFlatButton}" Content="{md:PackIcon Kind=WindowClose}" Click="WindowClose_Click"/>
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Left" Margin="16 0 0 0" VerticalAlignment="Center" Text="{Binding WindowTitle}" Style="{StaticResource MaterialDesignSubheadingTextBlock}"></TextBlock>
             </DockPanel>
@@ -69,9 +69,14 @@
                         </Grid.RowDefinitions>
 
                         <DockPanel Grid.Column="0">
-                            <ScrollViewer >
-                                <ListView>
-
+                            <Label DockPanel.Dock="Top" Content="Users:"/>
+                            <ScrollViewer Background="{DynamicResource PrimaryHueLightBrush}" VerticalScrollBarVisibility="Auto">
+                                <ListView ItemsSource="{Binding Users}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
                                 </ListView>
                             </ScrollViewer>
                         </DockPanel>
@@ -82,21 +87,23 @@
                                     <RowDefinition/>
                                     <RowDefinition Height="auto"/>
                                 </Grid.RowDefinitions>
-                                <ScrollViewer Grid.Row="0">
-                                    <ItemsControl  ItemsSource="{Binding Messages}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Margin="5 5 5 0" CornerRadius="10" BorderBrush="Gray" BorderThickness="1">
-                                                    <StackPanel Margin="10 5" Orientation="Horizontal">
-                                                        <TextBlock VerticalAlignment="Center" Text="{Binding From.Name}"/>
-                                                        <Border Margin="10 0"/>
-                                                        <TextBlock VerticalAlignment="Center" Text="{Binding Text}"/>
+                                <StackPanel Grid.Row="0">
+                                    <Label Content="Chat:" VerticalContentAlignment="Center"/>
+                                    <ScrollViewer  VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl  ItemsSource="{Binding Messages}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="10 5 10 0" Orientation="Horizontal">
+                                                        <md:Card VerticalAlignment="Center" Padding="10" Background="{DynamicResource PrimaryHueLightBrush}" Foreground="{DynamicResource PrimaryHueLightForegroundBrush}">
+                                                            <TextBlock Text="{Binding From.Name}"/>
+                                                        </md:Card>
+                                                        <TextBlock VerticalAlignment="Center" Margin="5" Text="{Binding Text}"/>
                                                     </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </StackPanel>
                                 <StackPanel Grid.Row="1">
                                     <Border Margin="5" CornerRadius="10" BorderThickness="1" BorderBrush="Gray">
                                         <DockPanel Margin="10">

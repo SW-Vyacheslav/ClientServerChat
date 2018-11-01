@@ -72,6 +72,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Objects\ClientManager.cs" />
+    <Compile Include="Objects\UserManager.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -110,6 +111,10 @@
     <ProjectReference Include="..\CommonObjects\CommonObjects.csproj">
       <Project>{3341a1f3-a693-444f-94b2-894b44823d05}</Project>
       <Name>CommonObjects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MyThemes\MyThemes.csproj">
+      <Project>{ba8c430a-cbdd-40bb-bb83-8b9c8464913f}</Project>
+      <Name>MyThemes</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

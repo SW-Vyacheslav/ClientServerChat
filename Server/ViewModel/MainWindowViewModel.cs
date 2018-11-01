@@ -11,23 +11,13 @@ namespace Server.ViewModel
         private Objects.Server _server;
         private const int _port = 80;
 
-        public ObservableCollection<User> Users { get; set; }
-
-        public void AddUser(User user)
+        public ObservableCollection<User> Users
         {
-            Users.Add(new User(user.Name,user.ID));
+            get { return _server.ClientManager.UserManager.Users; }
         }
-
-        public void RemoveUserByID(String user_id)
+        public ObservableCollection<User> BannedUsers
         {
-            for (int i = 0; i < Users.Count; i++)
-            {
-                if(user_id == Users[i].ID)
-                {
-                    Users.RemoveAt(i);
-                    break;
-                }
-            }
+            get { return _server.ClientManager.UserManager.BannedUsers; }
         }
 
         public String ServerStatus
@@ -44,18 +34,22 @@ namespace Server.ViewModel
 
         public MainWindowViewModel()
         {
-            _server = new Objects.Server(_port);
-            Users = new ObservableCollection<User>();
-
-            WindowTitle = "Server";
-
-            StartServerCommand = new DelegateCommand(o => StartServer(), o => !_server.IsStarted);
-            StopServerCommand = new DelegateCommand(o => StopServer(), o => _server.IsStarted);
+            InitFields();
         }
 
         ~MainWindowViewModel()
         {
             _server?.Dispose();
+        }
+
+        private void InitFields()
+        {
+            _server = new Objects.Server(_port);
+
+            WindowTitle = "Server";
+
+            StartServerCommand = new DelegateCommand(o => StartServer(), o => !_server.IsStarted);
+            StopServerCommand = new DelegateCommand(o => StopServer(), o => _server.IsStarted);
         }
 
         private void StartServer()

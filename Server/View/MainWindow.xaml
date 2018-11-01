@@ -23,12 +23,12 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <md:ColorZone Grid.Row="0" Mode="PrimaryLight">
+        <md:ColorZone Grid.Row="0" Mode="PrimaryDark">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMinimize}" Click="WindowMinimize_Click"/>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMaximize}" Click="WindowMaximize_Click"/>
-                    <Button Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowClose}" Click="WindowClose_Click"/>
+                    <Button Foreground="{DynamicResource PrimaryHueLightBrush}" Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMinimize}" Click="WindowMinimize_Click"/>
+                    <Button Foreground="{DynamicResource PrimaryHueLightBrush}" Style="{StaticResource MaterialDesignFlatButton}" Content="{md:PackIcon Kind=WindowMaximize}" Click="WindowMaximize_Click"/>
+                    <Button Foreground="{DynamicResource PrimaryHueLightBrush}" Style="{StaticResource MaterialDesignExitFlatButton}" Content="{md:PackIcon Kind=WindowClose}" Click="WindowClose_Click"/>
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Left" Margin="16 0 0 0" VerticalAlignment="Center" Text="{Binding WindowTitle}" Style="{StaticResource MaterialDesignSubheadingTextBlock}"></TextBlock>
             </DockPanel>
@@ -49,18 +49,38 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Grid.Row="1">
-                <Separator/>
-                <Label  Content="Connected Users:"/>
-                <ListView ItemsSource="{Binding Users}">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ID}"/>
-                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </StackPanel>
+            <DockPanel Grid.Row="1">
+                <Separator DockPanel.Dock="Top"/>
+                <Grid DockPanel.Dock="Bottom">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <Label  Content="Connected Users:"/>
+                        <ListView ItemsSource="{Binding Users}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ID}"/>
+                                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <Label  Content="Banned Users:"/>
+                        <ListView ItemsSource="{Binding BannedUsers}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ID}"/>
+                                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </StackPanel>
+                </Grid>
+            </DockPanel>
         </Grid>
     </Grid>
 </Window>

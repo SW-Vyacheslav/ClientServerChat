@@ -7,51 +7,47 @@ using System.Net.Sockets;
 using System.Windows;
 
 using CommonObjects.Models;
+using CommonObjects.Helpers;
 using Newtonsoft.Json;
 
 namespace Server.Objects
 {
     public class ClientManager : IDisposable
     {
-        private List<Socket> _clients;
         private ViewModel.MainWindowViewModel _mainWindowViewModel;
-
+        private List<Socket> _clients;
         private Dictionary<Type, String> _requestTypes;
+
+        public UserManager UserManager { get; private set; }
 
         public ClientManager()
         {
-            _clients = new List<Socket>();
-            InitTypes();
+            InitFields();
+            InitRequestTypes();
         }
 
-        private void InitTypes()
+        private void InitFields()
         {
+            UserManager = new UserManager();
+            _clients = new List<Socket>();
             _requestTypes = new Dictionary<Type, string>();
+        }
+        private void InitRequestTypes()
+        {
             _requestTypes.Add(typeof(ConnectRequest),"connect");
             _requestTypes.Add(typeof(DisconnectRequest),"disconnect");
             _requestTypes.Add(typeof(MessageRequest),"message");
         }
 
-        private T FunctionWithInvoke<T>(Func<T> callback)
-        {
-            return Application.Current.Dispatcher.Invoke(callback);
-        }
-
-        private void ActionWithInvoke(Action action)
-        {
-            Application.Current.Dispatcher.Invoke(action);
-        }
-
         public void AddClient(Socket client)
         {
-            if(_mainWindowViewModel == null) _mainWindowViewModel = FunctionWithInvoke( () => Application.Current.Windows.OfType<View.MainWindow>().FirstOrDefault().DataContext as ViewModel.MainWindowViewModel);
+            if(_mainWindowViewModel == null) _mainWindowViewModel = InvokeHelper.ApplicationInvoke( () => Application.Current.Windows.OfType<View.MainWindow>().FirstOrDefault().DataContext as ViewModel.MainWindowViewModel);
 
             _clients.Add(client);
             Thread clientLoop_Thread = new Thread(ClientLoop);
             clientLoop_Thread.IsBackground = true;
             clientLoop_Thread.Start(client);
         }
-
         public void Dispose()
         {
             foreach (Socket client in _clients)
@@ -69,14 +65,12 @@ namespace Server.Objects
                 SendResponseToClient(client,response);
             }
         }
-
         private void SendResponseToClient(Socket client, Response response)
         {
             String send_data_str = JsonConvert.SerializeObject(response);
             byte[] send_data_bytes = Encoding.UTF8.GetBytes(send_data_str);
             client.Send(send_data_bytes);
         }
-
         private Request GetRequestFromClient(Socket client)
         {
             Request value = null;
@@ -114,16 +108,45 @@ namespace Server.Objects
                     {
                         case "connect":
                             {
-                                Response connectResponse = new ConnectResponse((client_request as ConnectRequest).User);
-                                SendResponseToClient(temp_client,connectResponse);
-                                ActionWithInvoke( () => _mainWindowViewModel.AddUser((client_request as ConnectRequest).User));
-                                client_user = (client_request as ConnectRequest).User;
+                                User temp_user = (client_request as ConnectRequest).User;
+
+                                if (!UserManager.IsBannedUser(temp_user.ID))
+                                {
+                                    if(!UserManager.IsConnectedUser(temp_user.ID))
+                                    {
+                                        Response connectResponse = new ConnectResponse(temp_user);
+                                        SendResponseToClient(temp_client, connectResponse);
+                                        UserManager.AddUser(temp_user);
+                                        Response userListResponse = new UserListResponse(UserManager.Users.ToList());
+                                        SendResponseToAllClients(userListResponse);
+                                        client_user = temp_user;
+                                    }
+                                    else
+                                    {
+                                        Response connectResponse = new ConnectResponse(temp_user);
+                                        connectResponse.Ok = false;
+                                        connectResponse.Error = "user_is_connected";
+                                        SendResponseToClient(temp_client, connectResponse);
+                                        throw new Exception();
+                                    }
+                                }
+                                else
+                                {
+                                    Response connectResponse = new ConnectResponse(temp_user);
+                                    connectResponse.Ok = false;
+                                    connectResponse.Error = "user_is_banned";
+                                    SendResponseToClient(temp_client, connectResponse);
+                                    throw new Exception();
+                                }
+                                
                                 break;
                             }
 
                         case "disconnect":
                             {
-                                ActionWithInvoke(() => _mainWindowViewModel.RemoveUserByID((client_request as DisconnectRequest).User.ID));
+                                Response userListResponse = new UserListResponse(UserManager.Users.ToList());
+                                SendResponseToAllClients(userListResponse);
+                                UserManager.RemoveUserByID((client_request as DisconnectRequest).User.ID);
                                 throw new Exception();
                             }
 
@@ -147,7 +170,7 @@ namespace Server.Objects
             {
                 temp_client?.Close();
                 _clients.Remove(temp_client);
-                if(client_user != null) ActionWithInvoke( () => _mainWindowViewModel.RemoveUserByID(client_user.ID));
+                if(client_user != null) UserManager.RemoveUserByID(client_user.ID);
             }
         }
     }

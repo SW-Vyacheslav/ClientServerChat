@@ -27,8 +27,8 @@
             <TextBlock Margin="5 0 0 0" Grid.Row="0" Style="{StaticResource MaterialDesignTitleTextBlock}" Text="Settings"/>
             <Separator Grid.Row="1"/>
             <StackPanel Grid.Row="2">
-                <TextBox x:Name="serverIPAddress" md:HintAssist.Hint="Server IP" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding ServerIPAddress}"/>
-                <TextBox x:Name="userName" md:HintAssist.Hint="User Name" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding UserName}"/>
+                <TextBox x:Name="serverIPAddress" md:HintAssist.Hint="Server IP" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding Settings.ServerIPAddress}"/>
+                <TextBox x:Name="userName" md:HintAssist.Hint="User Name" Style="{StaticResource MaterialDesignFloatingHintTextBox}" Text="{Binding Settings.User.Name}"/>
             </StackPanel>
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Style="{StaticResource MaterialDesignFlatButton}" Content="Apply" Command="{x:Static wpf:DialogHost.CloseDialogCommand}">
