@@ -79,6 +79,7 @@ namespace Client.ViewModel
             _responseTypes.Add(typeof(ConnectResponse), "connect");
             _responseTypes.Add(typeof(MessageResponse), "message");
             _responseTypes.Add(typeof(UserListResponse), "user_list");
+            _responseTypes.Add(typeof(DisconnectResponse), "disconnect");
         }
 
         private void SendRequestToServer(Socket server, Request request)
@@ -228,19 +229,27 @@ namespace Client.ViewModel
                         case "disconnect":
                             {
                                 DisconnectResponse disconnectResponse = server_response as DisconnectResponse;
-                                String error_message = "Error: ";
-                                switch (disconnectResponse.Error)
-                                {
-                                    case "user_is_banned":
-                                        {
-                                            error_message += "User is banned.";
-                                            break;
-                                        }
 
-                                    default:
-                                        break;
+                                if (disconnectResponse.User.ID == ClientUser.ID)
+                                {
+                                    if(!disconnectResponse.Ok)
+                                    {
+                                        String error_message = "Error: ";
+                                        switch (disconnectResponse.Error)
+                                        {
+                                            case "user_is_banned":
+                                                {
+                                                    error_message += "User is banned.";
+                                                    break;
+                                                }
+
+                                            default:
+                                                break;
+                                        }
+                                        ShowSnackBarMessage(error_message);
+                                        throw new Exception();
+                                    }
                                 }
-                                ShowSnackBarMessage(error_message);
                                 break;
                             }
 

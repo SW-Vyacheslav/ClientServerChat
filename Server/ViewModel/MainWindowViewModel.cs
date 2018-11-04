@@ -11,6 +11,8 @@ namespace Server.ViewModel
         private Objects.Server _server;
         private const int _port = 80;
 
+        public Objects.Server Server { get { return _server; } }
+
         public ObservableCollection<User> Users
         {
             get { return _server.ClientManager.UserManager.Users; }
@@ -57,7 +59,6 @@ namespace Server.ViewModel
             _server.Start();
             RaisePropertyChangedEvent("ServerStatus");
         }
-
         private void StopServer()
         {
             _server.Stop();

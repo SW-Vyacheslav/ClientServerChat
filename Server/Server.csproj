@@ -74,6 +74,7 @@
     <Compile Include="Objects\ClientManager.cs" />
     <Compile Include="Objects\UserManager.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
+    <Compile Include="ViewModel\UsersListViewModel.cs" />
     <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

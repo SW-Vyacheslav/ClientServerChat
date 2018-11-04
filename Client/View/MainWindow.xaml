@@ -97,7 +97,7 @@
                                                         <md:Card VerticalAlignment="Center" Padding="10" Background="{DynamicResource PrimaryHueLightBrush}" Foreground="{DynamicResource PrimaryHueLightForegroundBrush}">
                                                             <TextBlock Text="{Binding From.Name}"/>
                                                         </md:Card>
-                                                        <TextBlock VerticalAlignment="Center" Margin="5" Text="{Binding Text}"/>
+                                                        <TextBox VerticalAlignment="Center" Margin="5" Text="{Binding Text}" TextWrapping="Wrap" IsReadOnly="True" Background="Transparent" BorderThickness="0"/>
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
