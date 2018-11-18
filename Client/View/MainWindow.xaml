@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Client"
         xmlns:vm="clr-namespace:Client.ViewModel"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:obj="clr-namespace:Client.Objects"
         mc:Ignorable="d"
         Height="768"
         Width="1024"
@@ -40,21 +41,6 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Margin="5 5 5 0">
-                <DockPanel DockPanel.Dock="Top" Margin="5">
-                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-                        <Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Content="{md:PackIcon Kind=Reload}" Command="{Binding ConnectCommand}"/>
-                        <Label Content="Connection:" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding Connection}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                        <Button Content="{md:PackIcon Kind=Settings}" Command="{Binding OpenSettingsDialog}"/>
-                    </StackPanel>
-                    <Border/>
-                </DockPanel>
-                <Separator/>
-            </StackPanel>
-
             <Border Grid.Row="1">
                 
                 <DockPanel>
@@ -87,28 +73,43 @@
                                     <RowDefinition/>
                                     <RowDefinition Height="auto"/>
                                 </Grid.RowDefinitions>
-                                <StackPanel Grid.Row="0">
-                                    <Label Content="Chat:" VerticalContentAlignment="Center"/>
-                                    <ScrollViewer  VerticalScrollBarVisibility="Auto">
+                                <DockPanel Grid.Row="0">
+                                    <Label DockPanel.Dock="Top" Content="Chat:" VerticalContentAlignment="Center"/>
+                                    <ScrollViewer VerticalScrollBarVisibility="Visible">
                                         <ItemsControl  ItemsSource="{Binding Messages}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <StackPanel Margin="10 5 10 0" Orientation="Horizontal">
-                                                        <md:Card VerticalAlignment="Center" Padding="10" Background="{DynamicResource PrimaryHueLightBrush}" Foreground="{DynamicResource PrimaryHueLightForegroundBrush}">
-                                                            <TextBlock Text="{Binding From.Name}"/>
-                                                        </md:Card>
-                                                        <TextBox VerticalAlignment="Center" Margin="5" Text="{Binding Text}" TextWrapping="Wrap" IsReadOnly="True" Background="Transparent" BorderThickness="0"/>
-                                                    </StackPanel>
+                                                    <md:Card Margin="10 5 10 0" Grid.Column="0" Padding="10" Background="{DynamicResource PrimaryHueLightBrush}" Foreground="{DynamicResource PrimaryHueLightForegroundBrush}">
+                                                        <DockPanel>
+                                                            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Text="{Binding From.Name}"/>
+                                                            <RichTextBox Grid.Column="1" VerticalAlignment="Center" Margin="5" IsReadOnly="True" Background="Transparent" BorderThickness="0">
+                                                                <RichTextBox.Document>
+                                                                    <FlowDocument>
+                                                                        <Paragraph>
+                                                                            <Run Text="{Binding Text}"/>
+                                                                        </Paragraph>
+                                                                    </FlowDocument>
+                                                                </RichTextBox.Document>
+                                                            </RichTextBox>
+                                                        </DockPanel>
+                                                    </md:Card>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </ScrollViewer>
-                                </StackPanel>
+                                </DockPanel>
                                 <StackPanel Grid.Row="1">
                                     <Border Margin="5" CornerRadius="10" BorderThickness="1" BorderBrush="Gray">
                                         <DockPanel Margin="10">
                                             <Button Margin="5 0 0 0" DockPanel.Dock="Right" Content="{md:PackIcon Kind=Send}" Command="{Binding SendMessageCommand}"/>
-                                            <TextBox md:HintAssist.Hint="Message" Text="{Binding MessageText}"/>
+                                            <Border Margin="5 0 0 0" DockPanel.Dock="Right" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="5">
+                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Text.Length, ElementName=messagebox}"/>
+                                                    <TextBlock VerticalAlignment="Center" Text="/"/>
+                                                    <TextBlock Text="{Binding MaxMessageLength}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <TextBox VerticalContentAlignment="Center" x:Name="messagebox" md:HintAssist.Hint="Message" Text="{Binding MessageText}"/>
                                         </DockPanel>
                                     </Border>
                                 </StackPanel>

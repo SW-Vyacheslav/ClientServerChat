@@ -56,17 +56,16 @@
     <Compile Include="Helpers\InvokeHelper.cs" />
     <Compile Include="Helpers\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Helpers\ObservableObject.cs" />
-    <Compile Include="Models\ConnectRequest.cs" />
-    <Compile Include="Models\ConnectResponse.cs" />
     <Compile Include="Models\DisconnectRequest.cs" />
     <Compile Include="Models\DisconnectResponse.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\MessageRequest.cs" />
     <Compile Include="Models\MessageResponse.cs" />
+    <Compile Include="Models\RegistrationRequest.cs" />
+    <Compile Include="Models\RegistrationResponse.cs" />
     <Compile Include="Models\Request.cs" />
     <Compile Include="Models\Response.cs" />
     <Compile Include="Models\User.cs" />
-    <Compile Include="Models\UserListResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

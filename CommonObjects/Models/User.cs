@@ -12,10 +12,22 @@ namespace CommonObjects.Models
         [JsonProperty("name")]
         public String Name { get; set; }
 
-        public User(String name = null, String id = null)
+        [JsonIgnore]
+        public String Password { get; set; }
+
+        [JsonIgnore]
+        public Boolean IsBanned { get; set; }
+
+        [JsonIgnore]
+        public Boolean IsConnected { get; set; }
+
+        public User(String id, String name, String password)
         {
-            ID = id ?? Guid.NewGuid().ToString();
-            Name = name ?? "Guest";
+            ID = id;
+            Name = name;
+            Password = password;
+            IsBanned = false;
+            IsConnected = false;
         }
     }
 }

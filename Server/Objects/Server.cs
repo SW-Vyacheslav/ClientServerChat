@@ -12,12 +12,7 @@ namespace Server.Objects
         private IPAddress _localIPAddress;
         private bool _isStarted;
 
-        private ClientManager _clientManager;
-
-        public ClientManager ClientManager
-        {
-            get { return _clientManager; }
-        }
+        public UserManager UserManager { get; private set; }
 
         public bool IsStarted
         {
@@ -29,7 +24,7 @@ namespace Server.Objects
             _localIPAddress = IPAddress.Parse("127.0.0.1");
             _localEndPoint = new IPEndPoint(_localIPAddress, port);
             _isStarted = false;
-            _clientManager = new ClientManager();
+            UserManager = new UserManager();
         }
 
         public void Start()
@@ -53,7 +48,7 @@ namespace Server.Objects
                 while(_isStarted)
                 {
                     Socket accepted_socket = _listenerSocket.Accept();
-                    _clientManager.AddClient(accepted_socket);
+                    UserManager.AddClient(accepted_socket);
                 }
             }
             catch (Exception e)
@@ -70,15 +65,15 @@ namespace Server.Objects
         {
             _isStarted = false;
             _listenerSocket?.Close();
-            _clientManager.Dispose();
+            UserManager.Dispose();
         }
 
         public void Dispose()
         {
             _listenerSocket?.Close();
             _listenerSocket = null;
-            _clientManager.Dispose();
-            _clientManager = null;
+            UserManager.Dispose();
+            UserManager = null;
         }
     }
 }

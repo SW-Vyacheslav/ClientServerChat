@@ -13,13 +13,17 @@ namespace Server.ViewModel
 
         public Objects.Server Server { get { return _server; } }
 
-        public ObservableCollection<User> Users
+        public ObservableCollection<User> DataBaseUsers
         {
-            get { return _server.ClientManager.UserManager.Users; }
+            get { return _server.UserManager.UserDataBase; }
+        }
+        public ObservableCollection<User> ConnectedUsers
+        {
+            get { return _server.UserManager.ConnectedUsers; }
         }
         public ObservableCollection<User> BannedUsers
         {
-            get { return _server.ClientManager.UserManager.BannedUsers; }
+            get { return _server.UserManager.BannedUsers; }
         }
 
         public String ServerStatus

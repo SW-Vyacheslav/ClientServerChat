@@ -22,17 +22,12 @@ namespace Server.ViewModel
         private static void Ban(object param)
         {
             User user = param as User;
-            mainWindowViewModel.Server.ClientManager.UserManager.AddBannedUser(mainWindowViewModel.Server.ClientManager.UserManager.GetUserByID(user.ID));
-
-            Response response = new DisconnectResponse(user);
-            response.Ok = false;
-            response.Error = "user_is_banned";
-            mainWindowViewModel.Server.ClientManager.SendResponseToAllClients(response);
+            mainWindowViewModel.Server.UserManager.BanUserByID(user.ID);
         }
         private static void UnBan(object param)
         {
             User user = param as User;
-            mainWindowViewModel.Server.ClientManager.UserManager.RemoveBannedUserByID(user.ID);
+            mainWindowViewModel.Server.UserManager.UnBanUserByID(user.ID);
         }
     }
 }

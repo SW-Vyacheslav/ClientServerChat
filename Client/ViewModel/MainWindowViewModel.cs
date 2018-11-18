@@ -14,8 +14,7 @@ using CommonObjects.Models;
 using Newtonsoft.Json;
 
 using Client.View;
-
-using MaterialDesignThemes.Wpf;
+using Client.Objects;
 
 namespace Client.ViewModel
 {
@@ -27,8 +26,10 @@ namespace Client.ViewModel
         private Socket _client;
         private IPAddress _serverIPAddress;
         private IPEndPoint _serverEndPoint;
-        private SettingsView _settingsView;
-       
+        private SettingsManager _settingsManager;
+
+        private const Int32 _maxMessageLength = 500;
+
         public Boolean IsConnected { get; set; }
         public String Connection
         {
@@ -40,11 +41,11 @@ namespace Client.ViewModel
         public User ClientUser { get; private set; }
         public String WindowTitle { get; set; }
         public String MessageText { get; set; }
+        public String MaxMessageLength { get { return _maxMessageLength.ToString(); } }
         public ObservableCollection<Message> Messages { get; set; }
         public ObservableCollection<User> Users { get; set; }
 
         public DelegateCommand ConnectCommand { get; set; }
-        public DelegateCommand OpenSettingsDialog { get; set; }
         public DelegateCommand SendMessageCommand { get; set; }
 
         public MainWindowViewModel()
@@ -61,24 +62,24 @@ namespace Client.ViewModel
         private void InitFields()
         {
             _mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
-            _settingsView = new SettingsView();
-            ClientUser = (_settingsView.DataContext as SettingsViewModel).Settings.User;
-
+            _mainWindow.Loaded += (o, e) =>
+            {
+                _mainWindow.messagebox.MaxLength = _maxMessageLength;
+            };
+            _settingsManager = new SettingsManager();
+            
             IsConnected = false;
             WindowTitle = "Client";
             Messages = new ObservableCollection<Message>();
             Users = new ObservableCollection<User>();
 
             ConnectCommand = new DelegateCommand(o => Connect(), o => !IsConnected);
-            OpenSettingsDialog = new DelegateCommand(o => ShowSettingsDialog());
             SendMessageCommand = new DelegateCommand(o => SendMessage(), o => IsConnected);
         }
         private void InitTypes()
         {
             _responseTypes = new Dictionary<Type, string>();
-            _responseTypes.Add(typeof(ConnectResponse), "connect");
             _responseTypes.Add(typeof(MessageResponse), "message");
-            _responseTypes.Add(typeof(UserListResponse), "user_list");
             _responseTypes.Add(typeof(DisconnectResponse), "disconnect");
         }
 
@@ -114,8 +115,7 @@ namespace Client.ViewModel
         {
             try
             {
-                SettingsViewModel settingsViewModel = _settingsView.DataContext as SettingsViewModel;
-                _serverIPAddress = IPAddress.Parse(settingsViewModel.Settings.ServerIPAddress);
+                _serverIPAddress = IPAddress.Parse(_settingsManager.Settings.ServerIPAddress);
                 _serverEndPoint = new IPEndPoint(_serverIPAddress, 80);
 
                 _client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -124,9 +124,6 @@ namespace Client.ViewModel
                 Thread serverListenerLoop_Thread = new Thread(serverListenerLoop);
                 serverListenerLoop_Thread.IsBackground = true;
                 serverListenerLoop_Thread.Start();
-
-                Request connectRequest = new ConnectRequest(ClientUser);
-                SendRequestToServer(_client,connectRequest);
             }
             catch(Exception e)
             {
@@ -155,21 +152,6 @@ namespace Client.ViewModel
         {
             if (_mainWindow.SnackBar != null) InvokeHelper.ApplicationInvoke(() => _mainWindow.SnackBar.MessageQueue.Enqueue(message));
         }
-        private void ShowSettingsDialog()
-        {            
-            _mainWindow.SettingsDialog.ShowDialog(_settingsView,SettingsClosingEventHandler);
-        }
-        private void SettingsClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
-        {
-            if((bool)eventArgs.Parameter == false) return;
-            SettingsViewModel settingsViewModel = _settingsView.DataContext as SettingsViewModel;
-            settingsViewModel.Settings.ServerIPAddress = _settingsView.serverIPAddress.Text;
-            settingsViewModel.Settings.User.Name = _settingsView.userName.Text;
-            settingsViewModel.ApplySettings();
-            _serverIPAddress = IPAddress.Parse(settingsViewModel.Settings.ServerIPAddress);
-            _serverEndPoint = new IPEndPoint(_serverIPAddress, 80);
-            ClientUser.Name = settingsViewModel.Settings.User.Name;
-        }
 
         private void serverListenerLoop()
         {
@@ -180,50 +162,40 @@ namespace Client.ViewModel
                     Response server_response = GetResponseFromServer(_client);
                     switch (server_response.ResponseType)
                     {
-                        case "connect":
-                            {
-                                ConnectResponse connectResponse = server_response as ConnectResponse;
-                                if (connectResponse.Ok)
-                                {
-                                    IsConnected = true;
-                                    RaisePropertyChangedEvent("Connection");
-                                }
-                                else
-                                {
-                                    String error_message = "Error: ";
-                                    switch (connectResponse.Error)
-                                    {
-                                        case "user_is_banned":
-                                            {
-                                                error_message += "User is banned.";
-                                                break;
-                                            }
-                                        case "user_is_connected":
-                                            {
-                                                error_message += "User is already connected.";
-                                                break;
-                                            }
+                        //case "connect":
+                        //    {
+                        //        ConnectResponse connectResponse = server_response as ConnectResponse;
+                        //        if (connectResponse.Ok)
+                        //        {
+                        //            IsConnected = true;
+                        //            RaisePropertyChangedEvent("Connection");
+                        //        }
+                        //        else
+                        //        {
+                        //            String error_message = "Error: ";
+                        //            switch (connectResponse.Error)
+                        //            {
+                        //                case "user_is_banned":
+                        //                    {
+                        //                        error_message += "User is banned.";
+                        //                        break;
+                        //                    }
+                        //                case "user_is_connected":
+                        //                    {
+                        //                        error_message += "User is already connected.";
+                        //                        break;
+                        //                    }
 
-                                        default:
-                                            break;
-                                    }
-                                    ShowSnackBarMessage(error_message);
-                                }
-                                break;
-                            }
+                        //                default:
+                        //                    break;
+                        //            }
+                        //            ShowSnackBarMessage(error_message);
+                        //        }
+                        //        break;
+                        //    }
                         case "message":
                             {
                                 InvokeHelper.ApplicationInvoke(() => Messages.Add((server_response as MessageResponse).Message));
-                                break;
-                            }
-                        case "user_list":
-                            {
-                                UserListResponse userListResponse = server_response as UserListResponse;
-                                InvokeHelper.ApplicationInvoke(() => Users.Clear());
-                                foreach (User user in userListResponse.Users)
-                                {
-                                    InvokeHelper.ApplicationInvoke(() => Users.Add(user));
-                                }
                                 break;
                             }
                         case "disconnect":

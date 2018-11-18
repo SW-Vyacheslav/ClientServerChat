@@ -2,31 +2,27 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-using Client.Objects;
-using CommonObjects.Helpers;
-using CommonObjects.Models;
-
-namespace Client.ViewModel
+namespace Client.Objects
 {
-    public class SettingsViewModel : ObservableObject
+    public class SettingsManager
     {
-        private const String _data_file_name = "data.bin";
+        private const String _settings_file_name = "data.bin";
 
         public Settings @Settings { get; private set; }
 
-        public SettingsViewModel()
+        public SettingsManager()
         {
             GetSettings();
         }
 
         private void GetSettings()
         {
-            String data_file_path = Environment.CurrentDirectory + "/" + _data_file_name;
+            String data_file_path = Environment.CurrentDirectory + "/" + _settings_file_name;
             BinaryFormatter bin_formatter = new BinaryFormatter();
 
             if (!File.Exists(data_file_path))
             {
-                Settings = new Settings(new User());
+                Settings = new Settings();
                 using (FileStream file_stream = new FileStream(data_file_path, FileMode.Create, FileAccess.Write))
                 {
                     bin_formatter.Serialize(file_stream, Settings);
@@ -43,7 +39,7 @@ namespace Client.ViewModel
 
         public void ApplySettings()
         {
-            String data_file_path = Environment.CurrentDirectory + "/" + _data_file_name;
+            String data_file_path = Environment.CurrentDirectory + "/" + _settings_file_name;
             BinaryFormatter bin_formatter = new BinaryFormatter();
 
             using (FileStream file_stream = new FileStream(data_file_path, FileMode.Create, FileAccess.Write))

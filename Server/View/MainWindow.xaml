@@ -7,8 +7,8 @@
         xmlns:vm="clr-namespace:Server.ViewModel"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Height="600"
-        Width="800"
+        Height="768"
+        Width="1024"
         WindowStyle="None"
         ResizeMode="NoResize"
         MouseDown="Window_MouseDown">
@@ -54,65 +54,102 @@
                 <Grid DockPanel.Dock="Bottom">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <Label  Content="Connected Users:"/>
-                        <ItemsControl ItemsSource="{Binding Users}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="10" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}" Padding="10" Margin="5 0 5 5">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1*"/>
-                                                <ColumnDefinition Width="0.3*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Orientation="Vertical">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Label VerticalContentAlignment="Center" Content="ID:"/>
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding ID}"/>
+                    <DockPanel Grid.Column="0">
+                        <Label DockPanel.Dock="Top" Content="Connected Users:"/>
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding ConnectedUsers}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="10" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}" Padding="10" Margin="5 0 5 5">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="0.3*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Orientation="Vertical">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Label VerticalContentAlignment="Center" Content="ID:"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding ID}"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Label VerticalContentAlignment="Center" Content="Name:"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                                                    </StackPanel>
                                                 </StackPanel>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Label VerticalContentAlignment="Center" Content="Name:"/>
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                                                <Button VerticalAlignment="Center" Grid.Column="1" Content="Ban" Background="Red" Foreground="White" Command="{x:Static vm:UsersListViewModel.BanCommand}" CommandParameter="{Binding .}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                    <DockPanel Grid.Column="1">
+                        <Label DockPanel.Dock="Top" Content="Banned Users:"/>
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding BannedUsers}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="10" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}" Padding="10" Margin="5 0 5 5">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Orientation="Vertical">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Label VerticalContentAlignment="Center" Content="ID:"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding ID}"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Label VerticalContentAlignment="Center" Content="Name:"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                                                    </StackPanel>
                                                 </StackPanel>
-                                            </StackPanel>
-                                            <Button VerticalAlignment="Center" Grid.Column="1" Content="Ban" Background="Red" Foreground="White" Command="{x:Static vm:UsersListViewModel.BanCommand}" CommandParameter="{Binding .}"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2">
-                        <Label  Content="Banned Users:"/>
-                        <ItemsControl ItemsSource="{Binding BannedUsers}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="10" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}" Padding="10" Margin="5 0 5 5">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1*"/>
-                                                <ColumnDefinition Width="auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Orientation="Vertical">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Label VerticalContentAlignment="Center" Content="ID:"/>
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding ID}"/>
+                                                <Button VerticalAlignment="Center" Grid.Column="1" Content="UnBan" Background="LightGreen" Foreground="White" Command="{x:Static vm:UsersListViewModel.UnBanCommand}" CommandParameter="{Binding .}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                    <DockPanel Grid.Column="2">
+                        <Label DockPanel.Dock="Top" Content="Data Base:"/>
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding DataBaseUsers}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="10" BorderThickness="1" BorderBrush="{DynamicResource PrimaryHueDarkBrush}" Padding="10" Margin="5 0 5 5">
+                                            <Grid>
+                                                <StackPanel Orientation="Vertical">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Label VerticalContentAlignment="Center" Content="ID:"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding ID}"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Label VerticalContentAlignment="Center" Content="Name:"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Label VerticalContentAlignment="Center" Content="IsBanned:"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding IsBanned}"/>
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Label VerticalContentAlignment="Center" Content="IsConnected:"/>
+                                                        <TextBlock VerticalAlignment="Center" Text="{Binding IsConnected}"/>
+                                                    </StackPanel>
                                                 </StackPanel>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <Label VerticalContentAlignment="Center" Content="Name:"/>
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
-                                                </StackPanel>
-                                            </StackPanel>
-                                            <Button VerticalAlignment="Center" Grid.Column="1" Content="UnBan" Background="LightGreen" Foreground="White" Command="{x:Static vm:UsersListViewModel.UnBanCommand}" CommandParameter="{Binding .}"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
                 </Grid>
             </DockPanel>
         </Grid>
