@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 
 using CommonObjects.Helpers;
-using CommonObjects.Models;
 
 namespace Server.ViewModel
 {
@@ -13,24 +11,11 @@ namespace Server.ViewModel
 
         public Objects.Server Server { get { return _server; } }
 
-        public ObservableCollection<User> DataBaseUsers
-        {
-            get { return _server.UserManager.UserDataBase; }
-        }
-        public ObservableCollection<User> ConnectedUsers
-        {
-            get { return _server.UserManager.ConnectedUsers; }
-        }
-        public ObservableCollection<User> BannedUsers
-        {
-            get { return _server.UserManager.BannedUsers; }
-        }
-
         public String ServerStatus
         {
             get
             {
-                return (_server.IsStarted == true ? "Running" : "Stoped") ?? "Stoped"; 
+                return (_server?.IsStarted == true ? "Running" : "Stoped") ?? "Stoped"; 
             }
         }
         public String WindowTitle { get; set; }
@@ -40,22 +25,16 @@ namespace Server.ViewModel
 
         public MainWindowViewModel()
         {
-            InitFields();
-        }
-
-        ~MainWindowViewModel()
-        {
-            _server?.Dispose();
-        }
-
-        private void InitFields()
-        {
             _server = new Objects.Server(_port);
 
             WindowTitle = "Server";
 
             StartServerCommand = new DelegateCommand(o => StartServer(), o => !_server.IsStarted);
             StopServerCommand = new DelegateCommand(o => StopServer(), o => _server.IsStarted);
+        }
+        ~MainWindowViewModel()
+        {
+            _server?.Dispose();
         }
 
         private void StartServer()

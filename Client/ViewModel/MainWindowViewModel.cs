@@ -1,228 +1,139 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Net.Sockets;
 using System.Net;
-using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
 
 using CommonObjects.Helpers;
 using CommonObjects.Models;
-
-using Newtonsoft.Json;
+using CommonObjects.Exceptions;
 
 using Client.View;
 using Client.Objects;
 
 namespace Client.ViewModel
 {
-    public class MainWindowViewModel : ObservableObject
+    public class MainWindowViewModel
     {
-        private MainWindow _mainWindow;
-        private Dictionary<Type, String> _responseTypes;
+        public static Socket Client { get; set; }
+        public static SettingsManager SettingsManager { get; private set; } = new SettingsManager();
 
-        private Socket _client;
-        private IPAddress _serverIPAddress;
-        private IPEndPoint _serverEndPoint;
-        private SettingsManager _settingsManager;
+        private static ChatViewModel _chatViewModel;
 
-        private const Int32 _maxMessageLength = 500;
-
-        public Boolean IsConnected { get; set; }
-        public String Connection
-        {
-            get
-            {
-                return IsConnected == true ? "Connected" : "Disconnected";
-            }
-        }
-        public User ClientUser { get; private set; }
-        public String WindowTitle { get; set; }
-        public String MessageText { get; set; }
-        public String MaxMessageLength { get { return _maxMessageLength.ToString(); } }
-        public ObservableCollection<Message> Messages { get; set; }
-        public ObservableCollection<User> Users { get; set; }
-
-        public DelegateCommand ConnectCommand { get; set; }
-        public DelegateCommand SendMessageCommand { get; set; }
+        public static Boolean IsConnected { get; set; } = false;
+        public static User ClientUser { get; private set; }
+        public static String WindowTitle { get; set; } = "Client";
 
         public MainWindowViewModel()
         {
-            InitFields();
-            InitTypes();
-            Connect();
+            Application.Current.MainWindow.Loaded += (o, e) =>
+            {
+                (Application.Current.MainWindow as MainWindow).controlsHolder.Children.Add(new StartView());
+            };
         }
         ~MainWindowViewModel()
         {
             Disconnect();
         }
 
-        private void InitFields()
-        {
-            _mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
-            _mainWindow.Loaded += (o, e) =>
-            {
-                _mainWindow.messagebox.MaxLength = _maxMessageLength;
-            };
-            _settingsManager = new SettingsManager();
-            
-            IsConnected = false;
-            WindowTitle = "Client";
-            Messages = new ObservableCollection<Message>();
-            Users = new ObservableCollection<User>();
-
-            ConnectCommand = new DelegateCommand(o => Connect(), o => !IsConnected);
-            SendMessageCommand = new DelegateCommand(o => SendMessage(), o => IsConnected);
-        }
-        private void InitTypes()
-        {
-            _responseTypes = new Dictionary<Type, string>();
-            _responseTypes.Add(typeof(MessageResponse), "message");
-            _responseTypes.Add(typeof(DisconnectResponse), "disconnect");
-        }
-
-        private void SendRequestToServer(Socket server, Request request)
-        {
-            String send_data_str = JsonConvert.SerializeObject(request);
-            byte[] send_data_bytes = Encoding.UTF8.GetBytes(send_data_str);
-            server.Send(send_data_bytes);
-        }
-        private Response GetResponseFromServer(Socket server)
-        {
-            Response value = null;
-
-            byte[] recv_data_bytes = new byte[1024];
-            server.Receive(recv_data_bytes);
-            String recv_data_str = Encoding.UTF8.GetString(recv_data_bytes);
-
-            dynamic temp = JsonConvert.DeserializeObject(recv_data_str);
-
-            for (int i = 0; i < _responseTypes.Count; i++)
-            {
-                if (temp.response_type == _responseTypes.Values.ElementAt(i))
-                {
-                    value = JsonConvert.DeserializeObject(recv_data_str, _responseTypes.Keys.ElementAt(i)) as Response;
-                    break;
-                }
-            }
-
-            return value;
-        }
-
-        private void Connect()
+        public static void Connect()
         {
             try
             {
-                _serverIPAddress = IPAddress.Parse(_settingsManager.Settings.ServerIPAddress);
-                _serverEndPoint = new IPEndPoint(_serverIPAddress, 80);
+                IPAddress serverIPAddress = IPAddress.Parse(SettingsManager.Settings.ServerIPAddress);
+                IPEndPoint serverEndPoint = new IPEndPoint(serverIPAddress, 80);
 
-                _client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                _client.Connect(_serverEndPoint);
+                Client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Client.Connect(serverEndPoint);
 
-                Thread serverListenerLoop_Thread = new Thread(serverListenerLoop);
-                serverListenerLoop_Thread.IsBackground = true;
+                IsConnected = true;
+
+                Thread serverListenerLoop_Thread = new Thread(ServerListenerLoop){ IsBackground = true };
                 serverListenerLoop_Thread.Start();
             }
-            catch(Exception e)
+            catch(SocketException)
             {
-                _client?.Close();
+                Client?.Close();
                 ShowSnackBarMessage("Error: Unable to connect to server.");
             }
         }
-        private void Disconnect()
+        public static void Disconnect()
         {
             if (!IsConnected) return;
 
-            Request disconnectRequest = new DisconnectRequest(ClientUser);
-            SendRequestToServer(_client,disconnectRequest);
-            _client?.Close();
+            Request disconnectRequest = new SignOutRequest();
+            DataTransferHelper.SendRequestToServer(Client,disconnectRequest);
+            Client?.Close();
 
             IsConnected = false;
-            RaisePropertyChangedEvent("Connection");
         }
-        private void SendMessage()
+        
+        private static void SetView(UserControl userControl)
         {
-            Request messageRequest = new MessageRequest(new Message(ClientUser, MessageText));
-            SendRequestToServer(_client,messageRequest);
+            (Application.Current.MainWindow as MainWindow).controlsHolder.Children.Clear();
+            (Application.Current.MainWindow as MainWindow).controlsHolder.Children.Add(userControl);
         }
 
-        private void ShowSnackBarMessage(String message)
+        private static void ShowSnackBarMessage(String message)
         {
-            if (_mainWindow.SnackBar != null) InvokeHelper.ApplicationInvoke(() => _mainWindow.SnackBar.MessageQueue.Enqueue(message));
+            if ((Application.Current.MainWindow as MainWindow).SnackBar != null) (Application.Current.MainWindow as MainWindow).SnackBar.MessageQueue.Enqueue(message);
         }
 
-        private void serverListenerLoop()
+        private static void ServerListenerLoop()
         {
             try
             {
                 while (true)
                 {
-                    Response server_response = GetResponseFromServer(_client);
+                    Response server_response = DataTransferHelper.GetResponseFromServer(Client);
+
                     switch (server_response.ResponseType)
                     {
-                        //case "connect":
-                        //    {
-                        //        ConnectResponse connectResponse = server_response as ConnectResponse;
-                        //        if (connectResponse.Ok)
-                        //        {
-                        //            IsConnected = true;
-                        //            RaisePropertyChangedEvent("Connection");
-                        //        }
-                        //        else
-                        //        {
-                        //            String error_message = "Error: ";
-                        //            switch (connectResponse.Error)
-                        //            {
-                        //                case "user_is_banned":
-                        //                    {
-                        //                        error_message += "User is banned.";
-                        //                        break;
-                        //                    }
-                        //                case "user_is_connected":
-                        //                    {
-                        //                        error_message += "User is already connected.";
-                        //                        break;
-                        //                    }
-
-                        //                default:
-                        //                    break;
-                        //            }
-                        //            ShowSnackBarMessage(error_message);
-                        //        }
-                        //        break;
-                        //    }
-                        case "message":
+                        case "auth":
                             {
-                                InvokeHelper.ApplicationInvoke(() => Messages.Add((server_response as MessageResponse).Message));
+                                if(server_response.Ok)
+                                {
+                                    InvokeHelper.ApplicationInvoke
+                                    (   
+                                        () => 
+                                        {
+                                            ChatView chatView = new ChatView();
+                                            _chatViewModel = chatView.DataContext as ChatViewModel;
+                                            SetView(chatView);
+                                        }
+                                    );
+                                }
+                                else
+                                {
+                                    if (server_response.Error == "user_name_not_exists") throw new InvalidUserNameException();
+                                    else if (server_response.Error == "invalid_password") throw new InvalidPasswordException();
+                                }
+
                                 break;
                             }
-                        case "disconnect":
+                        case "registration":
                             {
-                                DisconnectResponse disconnectResponse = server_response as DisconnectResponse;
-
-                                if (disconnectResponse.User.ID == ClientUser.ID)
+                                if (server_response.Ok)
                                 {
-                                    if(!disconnectResponse.Ok)
-                                    {
-                                        String error_message = "Error: ";
-                                        switch (disconnectResponse.Error)
-                                        {
-                                            case "user_is_banned":
-                                                {
-                                                    error_message += "User is banned.";
-                                                    break;
-                                                }
-
-                                            default:
-                                                break;
-                                        }
-                                        ShowSnackBarMessage(error_message);
-                                        throw new Exception();
-                                    }
+                                    InvokeHelper.ApplicationInvoke(() => ShowSnackBarMessage("User successfully registered"));
+                                    Disconnect();
                                 }
+                                else
+                                {
+                                    if (server_response.Error == "user_name_exists") throw new InvalidUserNameException("This user name already exists");
+                                }
+
                                 break;
+                            }
+                        case "message":
+                            {
+                                InvokeHelper.ApplicationInvoke(() => _chatViewModel.Messages.Add((server_response as MessageResponse).Message));
+                                break;
+                            }
+                        case "ban":
+                            {
+                                throw new UserBannedException();
                             }
 
                         default:
@@ -230,17 +141,29 @@ namespace Client.ViewModel
                     }
                 }
             }
-            catch(Exception e)
+            catch(UserBannedException e)
             {
-
+                InvokeHelper.ApplicationInvoke(() => ShowSnackBarMessage(e.Message));
             }
+            catch(InvalidUserNameException e)
+            {
+                InvokeHelper.ApplicationInvoke(() => ShowSnackBarMessage(e.Message));
+            }
+            catch(InvalidPasswordException e)
+            {
+                InvokeHelper.ApplicationInvoke(() => ShowSnackBarMessage(e.Message));
+            }
+            catch(SocketException)
+            {
+                InvokeHelper.ApplicationInvoke(() => ShowSnackBarMessage("Connection with server was destroyed."));
+            }
+            catch(Exception){}
             finally
             {
                 IsConnected = false;
-                RaisePropertyChangedEvent("Connection");
-                _client?.Close();
-                InvokeHelper.ApplicationInvoke(() => Users.Clear());
-                ShowSnackBarMessage("Error: Connection with server was destroyed.");
+                Client?.Close();
+                _chatViewModel = null;
+                InvokeHelper.ApplicationInvoke(() => SetView(new StartView()));
             }
         }
     }

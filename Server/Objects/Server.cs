@@ -34,8 +34,7 @@ namespace Server.Objects
             _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _listenerSocket.Bind(_localEndPoint);
 
-            Thread listenerLoop_Thread = new Thread(ListenerLoop);
-            listenerLoop_Thread.IsBackground = true;
+            Thread listenerLoop_Thread = new Thread(ListenerLoop) { IsBackground = true };
             listenerLoop_Thread.Start();
         }
 
@@ -51,7 +50,7 @@ namespace Server.Objects
                     UserManager.AddClient(accepted_socket);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
              
             }

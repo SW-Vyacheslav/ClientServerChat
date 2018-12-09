@@ -5,7 +5,7 @@ namespace Client.Objects
     [Serializable]
     public class Settings
     {
-        public String ServerIPAddress { get; private set; }
+        public String ServerIPAddress { get; set; }
 
         public Settings(String server_ip = "127.0.0.1")
         {

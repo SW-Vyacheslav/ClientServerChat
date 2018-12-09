@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="Client.View.StartView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Client.View"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:vm="clr-namespace:Client.ViewModel"
+             mc:Ignorable="d" 
+             Height="300" Width="350">
+    <UserControl.DataContext>
+        <vm:StartViewModel/>
+    </UserControl.DataContext>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Chat" HorizontalAlignment="Center" Style="{StaticResource MaterialDesignDisplay2TextBlock}"/>
+        <TextBox Grid.Row="1" Grid.ColumnSpan="2" Margin="30 10 30 0" Text="{Binding IPAddress, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" md:HintAssist.Hint="Server IP" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+        <TextBox Grid.Row="2" Grid.ColumnSpan="2" Margin="30 20 30 0" Text="{Binding UserName, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" md:HintAssist.Hint="User Name" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+        <TextBox Grid.Row="3" Grid.ColumnSpan="2" Margin="30 20 30 0" Text="{Binding Password, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" md:HintAssist.Hint="Password" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+        <Button Grid.Row="4" Content="Sign In" Margin="10" Command="{Binding SignInCommand}"/>
+        <Button Grid.Row="4" Grid.Column="1" Content="Sign Up" Margin="10" Command="{Binding SignUpCommand}"/>
+    </Grid>
+</UserControl>

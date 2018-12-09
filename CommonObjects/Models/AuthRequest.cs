@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace CommonObjects.Models
 {
-    public class RegistrationRequest : Request
+    public class AuthRequest : Request
     {
         [JsonProperty("user_name")]
         public String UserName { get; set; }
@@ -12,7 +12,7 @@ namespace CommonObjects.Models
         [JsonProperty("password")]
         public String Password { get; set; }
 
-        public RegistrationRequest(String user_name, String password) : base("registration")
+        public AuthRequest(String user_name, String password) : base("auth")
         {
             UserName = user_name;
             Password = password;

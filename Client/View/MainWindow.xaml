@@ -12,7 +12,9 @@
         Width="1024"
         WindowStyle="None"
         ResizeMode="NoResize"
-        MouseDown="Window_MouseDown">
+        MouseDown="Window_MouseDown"
+        BorderBrush="Black"
+        BorderThickness="1">
 
     <Window.DataContext>
         <vm:MainWindowViewModel/>
@@ -35,92 +37,8 @@
             </DockPanel>
         </md:ColorZone>
 
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
+        <Grid x:Name="controlsHolder" Grid.Row="1"></Grid>
 
-            <Border Grid.Row="1">
-                
-                <DockPanel>
-                    
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="0.4*"/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-
-                        <DockPanel Grid.Column="0">
-                            <Label DockPanel.Dock="Top" Content="Users:"/>
-                            <ScrollViewer Background="{DynamicResource PrimaryHueLightBrush}" VerticalScrollBarVisibility="Auto">
-                                <ListView ItemsSource="{Binding Users}">
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Name}"/>
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
-                            </ScrollViewer>
-                        </DockPanel>
-
-                        <DockPanel Grid.Column="1">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition Height="auto"/>
-                                </Grid.RowDefinitions>
-                                <DockPanel Grid.Row="0">
-                                    <Label DockPanel.Dock="Top" Content="Chat:" VerticalContentAlignment="Center"/>
-                                    <ScrollViewer VerticalScrollBarVisibility="Visible">
-                                        <ItemsControl  ItemsSource="{Binding Messages}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <md:Card Margin="10 5 10 0" Grid.Column="0" Padding="10" Background="{DynamicResource PrimaryHueLightBrush}" Foreground="{DynamicResource PrimaryHueLightForegroundBrush}">
-                                                        <DockPanel>
-                                                            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Text="{Binding From.Name}"/>
-                                                            <RichTextBox Grid.Column="1" VerticalAlignment="Center" Margin="5" IsReadOnly="True" Background="Transparent" BorderThickness="0">
-                                                                <RichTextBox.Document>
-                                                                    <FlowDocument>
-                                                                        <Paragraph>
-                                                                            <Run Text="{Binding Text}"/>
-                                                                        </Paragraph>
-                                                                    </FlowDocument>
-                                                                </RichTextBox.Document>
-                                                            </RichTextBox>
-                                                        </DockPanel>
-                                                    </md:Card>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
-                                </DockPanel>
-                                <StackPanel Grid.Row="1">
-                                    <Border Margin="5" CornerRadius="10" BorderThickness="1" BorderBrush="Gray">
-                                        <DockPanel Margin="10">
-                                            <Button Margin="5 0 0 0" DockPanel.Dock="Right" Content="{md:PackIcon Kind=Send}" Command="{Binding SendMessageCommand}"/>
-                                            <Border Margin="5 0 0 0" DockPanel.Dock="Right" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="5">
-                                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Text.Length, ElementName=messagebox}"/>
-                                                    <TextBlock VerticalAlignment="Center" Text="/"/>
-                                                    <TextBlock Text="{Binding MaxMessageLength}" VerticalAlignment="Center"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <TextBox VerticalContentAlignment="Center" x:Name="messagebox" md:HintAssist.Hint="Message" Text="{Binding MessageText}"/>
-                                        </DockPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-                        </DockPanel>
-                    </Grid>
-                </DockPanel>
-            </Border>
-        </Grid>
-        
         <md:Snackbar x:Name="SnackBar" Grid.Row="1" MessageQueue="{md:MessageQueue}"></md:Snackbar>
-        <md:DialogHost Grid.Row="1" x:Name="SettingsDialog"/>
     </Grid>
 </Window>

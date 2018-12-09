@@ -11,60 +11,53 @@ using System.Threading;
 using CommonObjects.Models;
 using CommonObjects.Helpers;
 
-using Newtonsoft.Json;
-
 namespace Server.Objects
 {
-    public class UserManager : IDisposable
+    public class UserManager : ObservableObject, IDisposable
     {
         private const String _data_base_file_name = "userdatabase.bin";
         private ObservableCollection<User> _userDataBase;
         private Dictionary<String, Socket> _clients;
-        private Dictionary<Type, String> _requestTypes;
 
-        public ObservableCollection<User> UserDataBase
+        public IEnumerable<User> UserDataBase
         {
             get
             {
-                return _userDataBase;
+                return from user in _userDataBase select user;
             }
         }
-        public ObservableCollection<User> ConnectedUsers
+        public IEnumerable<User> ConnectedUsers
         {
             get
             {
-                return (from user in _userDataBase where (user.IsConnected == true) select user) as ObservableCollection<User>;
+                return from user in _userDataBase where (user.IsConnected == true) select user;
             }
         }
-        public ObservableCollection<User> BannedUsers
+        public IEnumerable<User> BannedUsers
         {
             get
             {
-                return (from user in _userDataBase where (user.IsBanned == true) select user) as ObservableCollection<User>;
+                return from user in _userDataBase where (user.IsBanned == true) select user;
             }
         }
 
         public UserManager()
         {
             InitFields();
-            InitRequestTypes();
             GetUserDataBase();
+        }
+        ~UserManager()
+        {
+            MergeDataBases();
         }
 
         private void InitFields()
         {
             _clients = new Dictionary<String, Socket>();
-            _requestTypes = new Dictionary<Type, string>();
-        }
-        private void InitRequestTypes()
-        {
-            _requestTypes.Add(typeof(DisconnectRequest), "disconnect");
-            _requestTypes.Add(typeof(MessageRequest), "message");
+            _userDataBase = new ObservableCollection<User>();
         }
         private void GetUserDataBase()
         {
-            _userDataBase = new ObservableCollection<User>();
-
             String data_base_file_path = Environment.CurrentDirectory + "/" + _data_base_file_name;
 
             if (File.Exists(data_base_file_path))
@@ -85,7 +78,7 @@ namespace Server.Objects
 
                 foreach (Match match in matches)
                 {
-                    String[] user_fields = match.Value.Substring(1, match.Value.Length - 1).Split(';');
+                    String[] user_fields = match.Value.Substring(1, match.Value.Length - 2).Split(';');
                     User temp = new User
                     (
                         user_fields[0].Split(':')[1],
@@ -110,6 +103,17 @@ namespace Server.Objects
                 {
                     writer.Write("{"+String.Format("id:{0};name:{1};password:{2};is_banned:{3}",user.ID,user.Name,user.Password,user.IsBanned == true ? "1" : "0")+"}");
                 }
+            }
+        }
+        private void MergeDataBases()
+        {
+            String data_base_file_path = Environment.CurrentDirectory + "/" + _data_base_file_name;
+
+            File.Delete(data_base_file_path);
+
+            foreach (User user in _userDataBase)
+            {
+                AddUserToDataBase(user);
             }
         }
 
@@ -166,67 +170,59 @@ namespace Server.Objects
             }
             return null;
         }
+        public User GetUserByName(String user_name)
+        {
+            for (int i = 0; i < _userDataBase.Count; i++)
+            {
+                if (user_name == _userDataBase[i].Name)
+                {
+                    return _userDataBase[i];
+                }
+            }
+            return null;
+        }
 
         public void BanUserByID(String user_id)
         {
             GetUserByID(user_id).IsBanned = true;
 
-            //Response response = new DisconnectResponse(user);
-            //response.Ok = false;
-            //response.Error = "user_is_banned";
-            //mainWindowViewModel.Server.ClientManager.SendResponseToAllClients(response);
+            Response response = new BanResponse();
+            SendResponseToUserByUserID(user_id,response);
+
+            RaisePropertyChangedEvent("BannedUsers");
+            RaisePropertyChangedEvent("UserDataBase");
         }
         public void UnBanUserByID(String user_id)
         {
             GetUserByID(user_id).IsBanned = false;
+
+            RaisePropertyChangedEvent("BannedUsers");
+            RaisePropertyChangedEvent("UserDataBase");
         }
 
         private void SendResponseToAllClients(Response response)
         {
             foreach (Socket client in _clients.Values)
             {
-                SendResponseToClient(client, response);
+                DataTransferHelper.SendResponseToClient(client, response);
             }
-        }
-        private void SendResponseToClient(Socket client, Response response)
-        {
-            String send_data_str = JsonConvert.SerializeObject(response);
-            byte[] send_data_bytes = Encoding.UTF8.GetBytes(send_data_str);
-            client.Send(send_data_bytes);
         }
         private void SendResponseToUserByUserID(String user_id, Response response)
         {
-            SendResponseToClient(GetClientByUserID(user_id),response);
-        }
-        private Request GetRequestFromClient(Socket client)
-        {
-            Request value = null;
-
-            byte[] recv_data_bytes = new byte[1024];
-            client.Receive(recv_data_bytes);
-            String recv_data_str = Encoding.UTF8.GetString(recv_data_bytes);
-
-            dynamic temp = JsonConvert.DeserializeObject(recv_data_str);
-
-            for (int i = 0; i < _requestTypes.Count; i++)
-            {
-                if (temp.request_type == _requestTypes.Values.ElementAt(i))
-                {
-                    value = JsonConvert.DeserializeObject(recv_data_str, _requestTypes.Keys.ElementAt(i)) as Request;
-                    break;
-                }
-            }
-
-            return value;
+            DataTransferHelper.SendResponseToClient(GetClientByUserID(user_id),response);
         }
 
         public void AddClient(Socket client)
         {
             String temp_id = Guid.NewGuid().ToString();
             _clients.Add(temp_id, client);
-            Thread clientLoop_Thread = new Thread(ClientLoop);
-            clientLoop_Thread.IsBackground = true;
-            clientLoop_Thread.Start(from pair in _clients where (pair.Key == temp_id) select pair);
+            Thread clientLoop_Thread = new Thread(ClientLoop) { IsBackground = true };
+            IDSocket idSocket = new IDSocket()
+            {
+                Handle_ID = temp_id,
+                Handle_Socket = client
+            };
+            clientLoop_Thread.Start(idSocket);
         }
         private Socket GetClientByUserID(String user_id)
         {
@@ -246,19 +242,18 @@ namespace Server.Objects
             }
 
             _clients.Clear();
-            _requestTypes.Clear();
         }
 
-        private void ClientLoop(object pair)
+        private void ClientLoop(object o)
         {
-            Socket temp_client = ((KeyValuePair<String, Socket>)pair).Value;
-            User client_user = new User(((KeyValuePair<String, Socket>)pair).Key,null,null);
+            Socket temp_client = ((IDSocket)o).Handle_Socket;
+            User client_user = new User(((IDSocket)o).Handle_ID,null,null);
 
             try
             {
                 while (true)
                 {
-                    Request client_request = GetRequestFromClient(temp_client);
+                    Request client_request = DataTransferHelper.GetRequestFromClient(temp_client);
 
                     switch (client_request.RequestType)
                     {
@@ -270,20 +265,73 @@ namespace Server.Objects
                                 {
                                     AddUser(new User(GetNewUserID(), registrationRequest.UserName, registrationRequest.Password));
                                     RegistrationResponse registrationResponse = new RegistrationResponse();
-                                    SendResponseToClient(temp_client, registrationResponse);
+                                    DataTransferHelper.SendResponseToClient(temp_client, registrationResponse);
                                 }
                                 else
                                 {
-                                    RegistrationResponse registrationResponse = new RegistrationResponse();
-                                    registrationResponse.Ok = false;
-                                    registrationResponse.Error = "user_name_exists";
-                                    SendResponseToClient(temp_client, registrationResponse);
+                                    RegistrationResponse registrationResponse = new RegistrationResponse()
+                                    {
+                                        Ok = false,
+                                        Error = "user_name_exists"
+                                    };
+                                    DataTransferHelper.SendResponseToClient(temp_client, registrationResponse);
                                 }
 
                                 break;
                             }
 
-                        case "disconnect":
+                        case "auth":
+                            {
+                                AuthRequest authRequest = client_request as AuthRequest;
+
+                                if(IsUserNameExists(authRequest.UserName))
+                                {
+                                    User temp_user = GetUserByName(authRequest.UserName);
+                                    if (authRequest.Password == temp_user.Password)
+                                    {
+                                        if (IsBannedUser(temp_user.ID))
+                                        {
+                                            BanResponse banResponse = new BanResponse();
+                                            DataTransferHelper.SendResponseToClient(temp_client, banResponse);
+                                        }
+                                        else
+                                        {
+                                            AuthResponse authResponse = new AuthResponse();
+                                            DataTransferHelper.SendResponseToClient(temp_client, authResponse);
+                                            temp_user.IsConnected = true;
+                                            RaisePropertyChangedEvent("UserDataBase");
+                                            RaisePropertyChangedEvent("ConnectedUsers");
+                                            _clients.Add(temp_user.ID, temp_client);
+                                            _clients.Remove(client_user.ID);
+                                            client_user.ID = temp_user.ID;
+                                            client_user.Name = temp_user.Name;
+                                            client_user.Password = temp_user.Password;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        AuthResponse authResponse = new AuthResponse()
+                                        {
+                                            Ok = false,
+                                            Error = "invalid_password"
+                                        };
+                                        DataTransferHelper.SendResponseToClient(temp_client, authResponse);
+                                    }
+                                }
+                                else
+                                {
+                                    AuthResponse authResponse = new AuthResponse()
+                                    {
+                                        Ok = false,
+                                        Error = "user_name_not_exists"
+                                    };
+                                    DataTransferHelper.SendResponseToClient(temp_client,authResponse);
+                                }
+                                
+                                break;
+                            }
+
+                        case "signout":
                             {
                                 GetUserByID(client_user.ID).IsConnected = false;
                                 throw new Exception();
@@ -301,7 +349,7 @@ namespace Server.Objects
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
             }
@@ -309,7 +357,13 @@ namespace Server.Objects
             {
                 temp_client?.Close();
                 _clients.Remove(client_user.ID);
-                if (client_user != null) GetUserByID(client_user.ID).IsConnected = false;
+                if (client_user != null)
+                {
+                    User temp_user = GetUserByID(client_user.ID);
+                    if (temp_user != null) temp_user.IsConnected = false;
+                }
+                RaisePropertyChangedEvent("UserDataBase");
+                RaisePropertyChangedEvent("ConnectedUsers");
             }
         }
     }
