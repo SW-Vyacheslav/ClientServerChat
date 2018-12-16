@@ -12,12 +12,16 @@ namespace CommonObjects.Helpers
 {
     public static class DataTransferHelper
     {
+        private static Int32 _data_package_size = 2048;
+
         private static Dictionary<Type, String> _responseTypes = new Dictionary<Type, string>()
         {
             { typeof(MessageResponse), "message" },
             { typeof(RegistrationResponse),"registration" },
             { typeof(AuthResponse), "auth" },
-            { typeof(BanResponse), "ban" }
+            { typeof(BanResponse), "ban" },
+            { typeof(UserSignInResponse), "user_signin" },
+            { typeof(UserSignOutResponse), "user_signout" }
         };
         private static Dictionary<Type, String> _requestTypes = new Dictionary<Type, string>()
         {
@@ -37,7 +41,7 @@ namespace CommonObjects.Helpers
         {
             Response value = null;
 
-            byte[] recv_data_bytes = new byte[1024];
+            byte[] recv_data_bytes = new byte[_data_package_size];
             server.Receive(recv_data_bytes);
             String recv_data_str = Encoding.UTF8.GetString(recv_data_bytes);
 
@@ -64,7 +68,7 @@ namespace CommonObjects.Helpers
         {
             Request value = null;
 
-            byte[] recv_data_bytes = new byte[1024];
+            byte[] recv_data_bytes = new byte[_data_package_size];
             client.Receive(recv_data_bytes);
             String recv_data_str = Encoding.UTF8.GetString(recv_data_bytes);
 

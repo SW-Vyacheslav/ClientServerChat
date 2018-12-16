@@ -34,7 +34,7 @@ namespace Client.ViewModel
                 {
                     case "IPAddress":
                         {
-                            if (String.IsNullOrWhiteSpace(IPAddress)) result = "IPAddress can't be empty.";
+                            if (String.IsNullOrWhiteSpace(IPAddress)) result = "IPAddress can't be empty";
                             else
                             {
                                 Regex ipAddrRegEx = new Regex(IPAddressRegEx);

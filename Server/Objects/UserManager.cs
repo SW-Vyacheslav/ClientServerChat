@@ -5,7 +5,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 
 using CommonObjects.Models;
@@ -296,21 +295,44 @@ namespace Server.Objects
                                         }
                                         else
                                         {
-                                            AuthResponse authResponse = new AuthResponse();
-                                            DataTransferHelper.SendResponseToClient(temp_client, authResponse);
-                                            temp_user.IsConnected = true;
-                                            RaisePropertyChangedEvent("UserDataBase");
-                                            RaisePropertyChangedEvent("ConnectedUsers");
-                                            _clients.Add(temp_user.ID, temp_client);
-                                            _clients.Remove(client_user.ID);
-                                            client_user.ID = temp_user.ID;
-                                            client_user.Name = temp_user.Name;
-                                            client_user.Password = temp_user.Password;
+                                            if(IsConnectedUser(temp_user.ID))
+                                            {
+                                                AuthResponse authResponse = new AuthResponse(temp_user);
+                                                authResponse.Error = "user_is_connected";
+                                                authResponse.Ok = false;
+                                                DataTransferHelper.SendResponseToClient(temp_client, authResponse);
+                                            }
+                                            else
+                                            {
+                                                AuthResponse authResponse = new AuthResponse(temp_user);
+                                                DataTransferHelper.SendResponseToClient(temp_client, authResponse);
+                                                temp_user.IsConnected = true;
+                                                RaisePropertyChangedEvent("UserDataBase");
+                                                RaisePropertyChangedEvent("ConnectedUsers");
+                                                _clients.Add(temp_user.ID, temp_client);
+                                                _clients.Remove(client_user.ID);
+                                                client_user.ID = temp_user.ID;
+                                                client_user.Name = temp_user.Name;
+                                                client_user.Password = temp_user.Password;
+                                                
+                                                for (int i = 0; i < ConnectedUsers.Count(); i++)
+                                                {
+                                                    if (ConnectedUsers.ElementAt(i).ID == client_user.ID) continue;
+                                                    UserSignInResponse userSignInResponse = new UserSignInResponse(ConnectedUsers.ElementAt(i));
+                                                    DataTransferHelper.SendResponseToClient(temp_client, userSignInResponse);
+                                                }
+                                                for (int i = 0; i < _clients.Count(); i++)
+                                                {
+                                                    if (_clients.ElementAt(i).Key == client_user.ID) continue;
+                                                    UserSignInResponse userSignInResponse = new UserSignInResponse(client_user);
+                                                    DataTransferHelper.SendResponseToClient(_clients.ElementAt(i).Value, userSignInResponse);
+                                                }
+                                            }
                                         }
                                     }
                                     else
                                     {
-                                        AuthResponse authResponse = new AuthResponse()
+                                        AuthResponse authResponse = new AuthResponse(null)
                                         {
                                             Ok = false,
                                             Error = "invalid_password"
@@ -320,7 +342,7 @@ namespace Server.Objects
                                 }
                                 else
                                 {
-                                    AuthResponse authResponse = new AuthResponse()
+                                    AuthResponse authResponse = new AuthResponse(null)
                                     {
                                         Ok = false,
                                         Error = "user_name_not_exists"
@@ -349,7 +371,7 @@ namespace Server.Objects
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
             }
@@ -361,6 +383,8 @@ namespace Server.Objects
                 {
                     User temp_user = GetUserByID(client_user.ID);
                     if (temp_user != null) temp_user.IsConnected = false;
+                    UserSignOutResponse userSignOutResponse = new UserSignOutResponse(client_user);
+                    SendResponseToAllClients(userSignOutResponse);
                 }
                 RaisePropertyChangedEvent("UserDataBase");
                 RaisePropertyChangedEvent("ConnectedUsers");

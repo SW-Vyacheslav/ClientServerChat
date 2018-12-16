@@ -18,10 +18,16 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Column="0">
+        <DockPanel Grid.ColumnSpan="2" Margin="10">
+            <Button DockPanel.Dock="Right" Content="Sign out" Command="{Binding SignOutCommand}"/>
+            <Border/>
+        </DockPanel>
+
+        <DockPanel Grid.Column="0" Grid.Row="1">
             <Label DockPanel.Dock="Top" Content="Users:"/>
             <ScrollViewer Background="{DynamicResource PrimaryHueLightBrush}" VerticalScrollBarVisibility="Auto">
                 <ListView ItemsSource="{Binding Users}">
@@ -34,7 +40,7 @@
             </ScrollViewer>
         </DockPanel>
 
-        <DockPanel Grid.Column="1">
+        <DockPanel Grid.Column="1" Grid.Row="1">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition/>
@@ -46,9 +52,16 @@
                         <ItemsControl  ItemsSource="{Binding Messages}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <md:Card Margin="10 5 10 0" Grid.Column="0" Padding="10" Background="{DynamicResource PrimaryHueLightBrush}" Foreground="{DynamicResource PrimaryHueLightForegroundBrush}">
-                                        <DockPanel>
-                                            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Text="{Binding From.Name}"/>
+                                    <md:Card Margin="10 5 10 0" Grid.Column="0" Background="{DynamicResource PrimaryHueLightBrush}" Foreground="{DynamicResource PrimaryHueLightForegroundBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="auto"/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Label Grid.Column="0" Background="{DynamicResource PrimaryHueDarkBrush}" DockPanel.Dock="Left" VerticalContentAlignment="Center" Content="{Binding From.Name}"/>
                                             <RichTextBox Grid.Column="1" VerticalAlignment="Center" Margin="5" IsReadOnly="True" Background="Transparent" BorderThickness="0">
                                                 <RichTextBox.Document>
                                                     <FlowDocument>
@@ -58,7 +71,7 @@
                                                     </FlowDocument>
                                                 </RichTextBox.Document>
                                             </RichTextBox>
-                                        </DockPanel>
+                                        </Grid>
                                     </md:Card>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -67,7 +80,7 @@
                 </DockPanel>
                 <StackPanel Grid.Row="1">
                     <Border Margin="5" CornerRadius="10" BorderThickness="1" BorderBrush="Gray">
-                        <DockPanel Margin="10">
+                        <DockPanel Margin="10 10 10 20">
                             <Button Margin="5 0 0 0" DockPanel.Dock="Right" Content="{md:PackIcon Kind=Send}" Command="{Binding SendMessageCommand}"/>
                             <Border Margin="5 0 0 0" DockPanel.Dock="Right" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="5">
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -76,7 +89,7 @@
                                     <TextBlock Text="{Binding MaxLength , ElementName=messagebox}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
-                            <TextBox VerticalContentAlignment="Center" x:Name="messagebox" MaxLength="500" md:HintAssist.Hint="Message" Text="{Binding MessageText}"/>
+                            <TextBox VerticalContentAlignment="Center" x:Name="messagebox" MaxLength="500" md:HintAssist.Hint="Message" Text="{Binding MessageText, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource MaterialDesignFloatingHintTextBox}"/>
                         </DockPanel>
                     </Border>
                 </StackPanel>

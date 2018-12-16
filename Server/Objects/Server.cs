@@ -20,8 +20,8 @@ namespace Server.Objects
         }
 
         public Server(int port)
-        {
-            _localIPAddress = IPAddress.Parse("127.0.0.1");
+        {            
+            _localIPAddress = Dns.GetHostAddresses(Dns.GetHostName())[0];
             _localEndPoint = new IPEndPoint(_localIPAddress, port);
             _isStarted = false;
             UserManager = new UserManager();

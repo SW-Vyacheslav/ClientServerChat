@@ -90,10 +90,26 @@ namespace Client.ViewModel
 
                     switch (server_response.ResponseType)
                     {
+                        case "user_signin":
+                            {
+                                UserSignInResponse userSignInResponse = server_response as UserSignInResponse;
+                                InvokeHelper.ApplicationInvoke(() => _chatViewModel.Users.Add(userSignInResponse.User));
+                                break;
+                            }
+                        case "user_signout":
+                            {
+                                UserSignOutResponse userSignOutResponse = server_response as UserSignOutResponse;
+                                for (int i = 0; i < _chatViewModel.Users.Count; i++)
+                                {
+                                    if(_chatViewModel.Users[i].ID == userSignOutResponse.User.ID) InvokeHelper.ApplicationInvoke(() => _chatViewModel.Users.RemoveAt(i));
+                                }
+                                break;
+                            }
                         case "auth":
                             {
                                 if(server_response.Ok)
                                 {
+                                    ClientUser = (server_response as AuthResponse).User;
                                     InvokeHelper.ApplicationInvoke
                                     (   
                                         () => 
@@ -108,6 +124,7 @@ namespace Client.ViewModel
                                 {
                                     if (server_response.Error == "user_name_not_exists") throw new InvalidUserNameException();
                                     else if (server_response.Error == "invalid_password") throw new InvalidPasswordException();
+                                    else if (server_response.Error == "user_is_connected") throw new Exception("User is connected");
                                 }
 
                                 break;
@@ -157,12 +174,15 @@ namespace Client.ViewModel
             {
                 InvokeHelper.ApplicationInvoke(() => ShowSnackBarMessage("Connection with server was destroyed."));
             }
-            catch(Exception){}
+            catch(Exception)
+            {}
             finally
             {
                 IsConnected = false;
                 Client?.Close();
+                Client = null;
                 _chatViewModel = null;
+                ClientUser = null;
                 InvokeHelper.ApplicationInvoke(() => SetView(new StartView()));
             }
         }

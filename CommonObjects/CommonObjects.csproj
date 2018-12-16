@@ -72,6 +72,8 @@
     <Compile Include="Models\Request.cs" />
     <Compile Include="Models\Response.cs" />
     <Compile Include="Models\User.cs" />
+    <Compile Include="Models\UserSignInResponse.cs" />
+    <Compile Include="Models\UserSignOutResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

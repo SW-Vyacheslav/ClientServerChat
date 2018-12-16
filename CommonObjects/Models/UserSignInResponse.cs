@@ -2,12 +2,12 @@
 
 namespace CommonObjects.Models
 {
-    public class AuthResponse : Response
+    public class UserSignInResponse : Response
     {
         [JsonProperty("user")]
         public User @User { get; set; }
 
-        public AuthResponse(User user) : base("auth")
+        public UserSignInResponse(User user) : base("user_signin")
         {
             User = user;
         }

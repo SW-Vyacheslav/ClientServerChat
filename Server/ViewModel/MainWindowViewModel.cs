@@ -1,5 +1,4 @@
 ﻿using System;
-
 using CommonObjects.Helpers;
 
 namespace Server.ViewModel
